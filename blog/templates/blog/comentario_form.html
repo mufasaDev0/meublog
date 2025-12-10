@@ -1,0 +1,86 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Editar Comentário – MeuBlog{% endblock %}
+
+{% block content %}
+<div class="post-form-container">
+  <h2>✏️ Editar Comentário</h2>
+  
+  <div style="background-color: #f8f9fa; padding: 1em; border-radius: 5px; margin-bottom: 1.5em;">
+    <strong>Post:</strong> 
+    <a href="{% url 'post_detail' slug=comentario.post.slug %}">{{ comentario.post.titulo }}</a>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="{{ form.conteudo.id_for_label }}">{{ form.conteudo.label }}</label>
+      {{ form.conteudo }}
+      
+      {% if form.conteudo.errors %}
+        <div class="error-message">
+          {{ form.conteudo.errors }}
+        </div>
+      {% endif %}
+      
+      {% if form.conteudo.help_text %}
+        <small class="form-text">{{ form.conteudo.help_text }}</small>
+      {% endif %}
+    </div>
+
+    <div style="margin-top: 1.5em;">
+      <button type="submit">Atualizar Comentário</button>
+      <a href="{% url 'post_detail' slug=comentario.post.slug %}" 
+         style="margin-left: 1em; text-decoration: none; color: #003f88;">
+        ← Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-group {
+    margin-bottom: 1.5em;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    color: #003f88;
+    margin-bottom: 0.5em;
+  }
+
+  .form-group textarea {
+    width: 100%;
+    padding: 0.7em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #003f88;
+    box-shadow: 0 0 0 2px rgba(0, 63, 136, 0.1);
+  }
+
+  .form-text {
+    display: block;
+    margin-top: 0.3em;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .error-message {
+    color: #d62828;
+    font-size: 0.9rem;
+    margin-top: 0.3em;
+  }
+</style>
+{% endblock %}

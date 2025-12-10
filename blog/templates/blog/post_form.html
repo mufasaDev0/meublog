@@ -1,0 +1,76 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if form.instance.pk %}Editar Post{% else %}Novo Post{% endif %} – MeuBlog
+{% endblock %}
+
+{% block content %}
+<div class="post-form-container">
+  <h2>
+    {% if form.instance.pk %}
+      ✏️ Editar Post
+    {% else %}
+      🆕 Novo Post
+    {% endif %}
+  </h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label for="id_titulo">Título</label>
+    {{ form.titulo }}
+
+    <label for="id_conteudo">Conteúdo</label>
+    {{ form.conteudo }}
+
+    <label for="id_categoria">Categoria</label>
+    {{ form.categoria }}
+
+    <label for="id_imagem">Imagem de destaque</label>
+    {{ form.imagem }}
+    {% if form.instance.imagem %}
+      <p>Imagem atual:</p>
+      <img src="{{ form.instance.imagem.url }}" alt="Imagem do post" style="max-width:100%; border-radius:5px; margin-top:0.5em;">
+    {% endif %}
+
+    <div style="margin-top: 1.5em;">
+      <button type="submit">
+        {% if form.instance.pk %}Atualizar{% else %}Publicar{% endif %}
+      </button>
+      <a href="{% url 'post_list' %}" style="margin-left: 1em; text-decoration: none; color: #003f88;">← Voltar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/form.js' %}"></script>
+{% endblock %}
+
+{% block extra_head %}
+  <title>{% if form.instance.pk %}Editar Post{% else %}Novo Post{% endif %}</title>
+{% endblock %}
+
+{% block extra_meta %}
+  <meta name="description" content="Formulário para criar ou editar posts no blog.">
+{% endblock %}
+{% block extra_scripts %}
+  <script>
+    // JavaScript para validação ou interações adicionais
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      form.addEventListener('submit', function(event) {
+        // Exemplo de validação simples
+        if (!form.titulo.value.trim()) {
+          alert('O título é obrigatório.');
+          event.preventDefault();
+        }
+      });
+    });
+  </script>
+{% endblock %}

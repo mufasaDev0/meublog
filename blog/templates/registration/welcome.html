@@ -1,0 +1,18 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Boas-vindas – MeuBlog{% endblock %}
+
+{% block content %}
+<div class="post-form-container" style="text-align: center;">
+  <img src="{% static 'blog/picapau.png' %}" alt="Mascote" style="height: 80px; margin-bottom: 1em;">
+  <h2>👋 Seja bem-vindo, {{ user.username }}!</h2>
+  <p style="margin: 1em 0;">Sua conta foi criada com sucesso.<br>Agora você pode criar e compartilhar seus próprios posts no MeuBlog.</p>
+
+  <a href="{% url 'post_create' %}">
+    <button style="background-color: #d62828; color: white; padding: 0.6em 2em; border: none; border-radius: 5px; cursor: pointer;">
+      Criar meu primeiro post
+    </button>
+  </a>
+</div>
+{% endblock %}

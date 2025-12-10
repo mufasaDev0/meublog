@@ -1,0 +1,466 @@
+/* RESET BÁSICO */
+* {
+  box-sizing: border-box;
+}
+
+/* ---------- ESTRUTURA GERAL ---------- */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  color: #001427;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- CABEÇALHO ---------- */
+header {
+  background-color: #003f88;
+  color: white;
+  padding: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+header img {
+  height: 40px;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin: 0;
+  color: #fcbf49;
+}
+
+/* ---------- LINKS ---------- */
+a {
+  color: #003f88;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  color: #d62828;
+}
+
+/* ---------- CONTEÚDO PRINCIPAL ---------- */
+main {
+  padding: 1em;
+  max-width: 800px;
+  margin: auto;
+}
+
+/* ---------- POSTS ---------- */
+.post {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.post img,
+.post-detail img {
+  width: 25%;
+  height: auto;
+  float: right;
+  margin-left: 1em;
+  border-radius: 5px;
+}
+
+.read-more {
+  display: inline-block;
+  margin-top: 0.5em;
+  color: #003f88;
+  font-weight: bold;
+}
+
+/* ---------- FILTRO DE CATEGORIAS ---------- */
+.filtro-categorias {
+  background-color: #fff;
+  padding: 1em;
+  border-radius: 8px;
+  margin-bottom: 1.5em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filtro-categorias strong {
+  display: block;
+  margin-bottom: 0.5em;
+  color: #003f88;
+}
+
+.filtro-categorias a {
+  display: inline-block;
+  padding: 0.4em 1em;
+  margin: 0.3em 0.3em 0 0;
+  border-radius: 20px;
+  background-color: #f8f9fa;
+  color: #003f88;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.filtro-categorias a:hover {
+  background-color: #003f88;
+  color: white;
+}
+
+.filtro-categorias a.categoria-ativa {
+  background-color: #d62828;
+  color: white;
+}
+
+/* ---------- REAÇÕES (CURTIDAS) ---------- */
+#reacao-container {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.btn-reacao {
+  background-color: #d62828;
+  color: white;
+  border: none;
+  padding: 0.6em 1.5em;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-reacao:hover {
+  background-color: #a4161a;
+  transform: scale(1.05);
+}
+
+#btn-curtir:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- SEÇÃO DE COMENTÁRIOS ---------- */
+.comentarios-section {
+  margin-top: 3em;
+  padding: 1.5em;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.comentarios-section h3 {
+  color: #003f88;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+/* ---------- FORMULÁRIO DE COMENTÁRIO ---------- */
+.form-comentario {
+  margin-bottom: 2em;
+  background-color: #f8f9fa;
+  padding: 1em;
+  border-radius: 8px;
+}
+
+.form-comentario textarea {
+  width: 100%;
+  padding: 0.7em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 0.7em;
+}
+
+.form-comentario button {
+  background-color: #003f88;
+  color: white;
+  border: none;
+  padding: 0.6em 2em;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.form-comentario button:hover {
+  background-color: #002855;
+}
+
+/* ---------- LISTA DE COMENTÁRIOS ---------- */
+.comentarios-lista {
+  margin-top: 1.5em;
+}
+
+.comentario {
+  background-color: #f8f9fa;
+  padding: 1em;
+  margin-bottom: 1em;
+  border-left: 3px solid #003f88;
+  border-radius: 5px;
+}
+
+.comentario-header {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: 0.5em;
+  flex-wrap: wrap;
+}
+
+.comentario-header strong {
+  color: #003f88;
+}
+
+.comentario-data {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.comentario-excluir {
+  margin-left: auto;
+  color: #d62828;
+  font-size: 0.85rem;
+  font-weight: normal;
+}
+
+.comentario-excluir:hover {
+  color: #a4161a;
+}
+
+.comentario-conteudo {
+  margin: 0;
+  color: #333;
+  line-height: 1.5;
+}
+
+.sem-comentarios {
+  text-align: center;
+  color: #999;
+  padding: 2em;
+  font-style: italic;
+}
+
+/* ---------- FORMULÁRIOS ---------- */
+form {
+  background-color: white;
+  padding: 25px;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+input[type="text"],
+textarea,
+select {
+  width: 100%;
+  padding: 0.5em;
+  margin-top: 0.3em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+input[type="file"] {
+  margin-top: 0.5em;
+}
+
+button, input[type="submit"] {
+  background-color: #d62828;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover, input[type="submit"]:hover {
+  background-color: #a4161a;
+}
+
+/* ---------- FORMULÁRIOS DE LOGIN/LOGOUT ---------- */
+.login-container, .logout-container {
+  max-width: 400px;
+  margin: auto;
+  padding: 2em;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
+/* ---------- FORMULÁRIO DE POST ---------- */
+.post-form-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 2em;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.post-form-container h2 {
+  text-align: center;
+  color: #d62828;
+  margin-bottom: 1em;
+}
+
+.post-form-container label {
+  display: block;
+  margin-top: 1em;
+  font-weight: bold;
+  color: #003f88;
+}
+
+.post-form-container button {
+  display: block;
+  margin: 2em auto 0;
+  background-color: #d62828;
+  color: white;
+  padding: 0.7em 2em;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.post-form-container button:hover {
+  background-color: #a4161a;
+}
+
+/* ---------- EXCLUIR POST ---------- */
+.messages {
+  list-style: none;
+  padding: 0;
+  margin: 1em 0;
+}
+
+.messages li {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.messages li.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.messages li.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.button-cancelar {
+  background-color: #6c757d;
+  color: white;
+  padding: 0.5em 1.2em;
+  margin-left: 1em;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.button-cancelar:hover {
+  background-color: #495057;
+}
+
+/* ---------- RODAPÉ ---------- */
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* ---------- RESPONSIVIDADE ---------- */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+  }
+
+  .post img,
+  .post-detail img {
+    float: none;
+    width: 100%;
+    margin: 1em 0;
+  }
+
+  main {
+    padding: 1em;
+  }
+
+  form,
+  .post-form-container {
+    padding: 1em;
+  }
+
+  .comentario-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .comentario-excluir {
+    margin-left: 0;
+  }
+
+  .filtro-categorias a {
+    font-size: 0.85rem;
+    padding: 0.3em 0.8em;
+  }
+}
+
+/* ---------- NAVBAR ---------- */
+.navbar {
+  background-color: #003f88;
+  padding: 0.5em;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1em;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar li {
+  margin: 0;
+}
+
+.navbar a {
+  color: #fcbf49;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 0.5em 1em;
+  border-radius: 5px;
+}
+
+.navbar a:hover {
+  background-color: #002855;
+  color: #ffffff;
+}
+
+.user-info {
+  color: #ffffff;
+  font-weight: bold;
+  align-self: center;
+}

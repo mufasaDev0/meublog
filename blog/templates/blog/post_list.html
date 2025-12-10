@@ -1,0 +1,136 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Início – MeuBlog{% endblock %}
+
+{% block content %}
+  <!-- TÍTULO COM CONTADOR DE POSTS -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em;">
+    <h2 style="margin: 0;">📰 Últimos Posts</h2>
+    <span style="background-color: #d62828; color: white; padding: 0.4em 0.8em; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
+      {{ total_posts }} post{{ total_posts|pluralize }}
+    </span>
+  </div>
+
+  <!-- FILTRO DE CATEGORIAS COM CONTADORES -->
+  {% if categorias %}
+  <div class="filtro-categorias">
+    <strong>🏷️ Filtrar por categoria:</strong>
+    
+    <!-- TODAS (sem filtro) -->
+    <a href="{% url 'post_list' %}" class="badge-categoria {% if not categoria_selecionada %}categoria-ativa{% endif %}">
+      Todas <span class="badge-numero">{{ total_posts }}</span>
+    </a>
+    
+    <!-- CATEGORIAS INDIVIDUAIS COM CONTADORES -->
+    {% for cat in categorias %}
+      <a href="?categoria={{ cat.id }}" class="badge-categoria {% if categoria_selecionada == cat %}categoria-ativa{% endif %}">
+        {{ cat.nome }} <span class="badge-numero">{{ cat.total_posts }}</span>
+      </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- MENSAGEM SE ESTIVER FILTRANDO -->
+  {% if categoria_selecionada %}
+    <p style="margin: 1em 0; color: #003f88; padding: 0.8em; background-color: #e8f4f8; border-radius: 5px;">
+      🔍 Exibindo posts da categoria: <strong>{{ categoria_selecionada.nome }}</strong>
+    </p>
+  {% endif %}
+
+  <!-- LISTA DE POSTS -->
+  {% for post in posts %}
+    <div class="post">
+      {% if post.imagem %}
+        <img src="{{ post.imagem.url }}" alt="Imagem de destaque">
+      {% endif %}
+      <h3>
+        <a href="{% url 'post_detail' slug=post.slug %}">{{ post.titulo }}</a>
+      </h3>
+      <p style="font-size: 0.9rem; color: #666;">
+        Publicado por <strong>{{ post.autor }}</strong> em {{ post.criado_em|date:"d M Y" }}
+        {% if post.categoria %}
+          | <span style="color: #d62828;">📂 {{ post.categoria.nome }}</span>
+        {% endif %}
+      </p>
+      <p>{{ post.conteudo|truncatewords:30 }}</p>
+      
+      <!-- INFORMAÇÕES ADICIONAIS: Reações e Comentários -->
+      <div style="font-size: 0.85rem; color: #999; margin-top: 0.5em;">
+        ❤️ {{ post.reacoes.count }} reação{{ post.reacoes|pluralize }} | 💬 {{ post.comentarios.count }} comentário{{ post.comentarios|pluralize }}
+      </div>
+      
+      <a href="{% url 'post_detail' slug=post.slug %}" class="read-more">Continuar lendo →</a>
+    </div>
+  {% empty %}
+    <p>Nenhum post encontrado {% if categoria_selecionada %}nesta categoria{% else %}ainda{% endif %}.</p>
+  {% endfor %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Estilos para badges de categoria com contador */
+  .filtro-categorias {
+    background-color: #fff;
+    padding: 1em;
+    border-radius: 8px;
+    margin-bottom: 1.5em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .filtro-categorias strong {
+    display: block;
+    margin-bottom: 0.8em;
+    color: #003f88;
+  }
+
+  .badge-categoria {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 1em;
+    margin: 0.3em 0.3em 0 0;
+    border-radius: 20px;
+    background-color: #f8f9fa;
+    color: #003f88;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .badge-categoria:hover {
+    background-color: #003f88;
+    color: white;
+    transform: scale(1.05);
+  }
+
+  .badge-categoria.categoria-ativa {
+    background-color: #d62828;
+    color: white;
+  }
+
+  .badge-numero {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+  }
+
+  .badge-categoria.categoria-ativa .badge-numero {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .filtro-categorias {
+      margin-bottom: 1em;
+    }
+
+    .badge-categoria {
+      font-size: 0.8rem;
+      padding: 0.4em 0.8em;
+    }
+  }
+</style>
+{% endblock %}

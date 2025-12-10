@@ -1,0 +1,181 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Criar Conta - MeuBlog{% endblock %}
+
+{% block content %}
+  <div class="post-form-container">
+    <div style="text-align: center; margin-bottom: 1.5em;">
+      <img src="{% static 'blog/picapau.png' %}" alt="Mascote" style="height: 80px;">
+      <h2 style="color: #d62828; margin-top: 0.5em;">👤 Criar Conta</h2>
+      <p style="color: #666;">Junte-se à comunidade do MeuBlog!</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      
+      <!-- Campo Username -->
+      <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Nome de usuário *</label>
+        {{ form.username }}
+        {% if form.username.help_text %}
+          <small class="form-text">{{ form.username.help_text }}</small>
+        {% endif %}
+        {% if form.username.errors %}
+          <div class="error-message">{{ form.username.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Campo Email -->
+      <div class="form-group">
+        <label for="{{ form.email.id_for_label }}">Email *</label>
+        {{ form.email }}
+        {% if form.email.help_text %}
+          <small class="form-text">{{ form.email.help_text }}</small>
+        {% endif %}
+        {% if form.email.errors %}
+          <div class="error-message">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Campo CPF (NOVO) -->
+      <div class="form-group">
+        <label for="{{ form.cpf.id_for_label }}">CPF *</label>
+        {{ form.cpf }}
+        {% if form.cpf.help_text %}
+          <small class="form-text">{{ form.cpf.help_text }}</small>
+        {% endif %}
+        {% if form.cpf.errors %}
+          <div class="error-message">{{ form.cpf.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Campo Senha -->
+      <div class="form-group">
+        <label for="{{ form.password1.id_for_label }}">Senha *</label>
+        {{ form.password1 }}
+        {% if form.password1.help_text %}
+          <small class="form-text">{{ form.password1.help_text }}</small>
+        {% endif %}
+        {% if form.password1.errors %}
+          <div class="error-message">{{ form.password1.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Campo Confirmar Senha -->
+      <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">Confirmar senha *</label>
+        {{ form.password2 }}
+        {% if form.password2.help_text %}
+          <small class="form-text">{{ form.password2.help_text }}</small>
+        {% endif %}
+        {% if form.password2.errors %}
+          <div class="error-message">{{ form.password2.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Erros não relacionados a campos específicos -->
+      {% if form.non_field_errors %}
+        <div class="error-message" style="padding: 1em; background-color: #f8d7da; border-radius: 5px; margin-bottom: 1em;">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <button type="submit" style="width: 100%; margin-top: 1em;">Cadastrar</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 1.5em;">
+      Já tem conta? <a href="{% url 'login' %}">Faça login</a>
+    </p>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-group {
+    margin-bottom: 1.2em;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    color: #003f88;
+    margin-bottom: 0.3em;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.6em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+
+  .form-text {
+    display: block;
+    margin-top: 0.3em;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .error-message {
+    color: #d62828;
+    font-size: 0.9rem;
+    margin-top: 0.3em;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #003f88;
+    box-shadow: 0 0 0 2px rgba(0, 63, 136, 0.1);
+  }
+
+  .post-form-container button {
+    background-color: #d62828;
+    color: white;
+    padding: 0.8em 2em;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .post-form-container button:hover {
+    background-color: #a4161a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Máscara para CPF
+  document.addEventListener('DOMContentLoaded', function() {
+    const cpfInput = document.getElementById('{{ form.cpf.id_for_label }}');
+    
+    if (cpfInput) {
+      cpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
+        
+        if (value.length > 11) {
+          value = value.slice(0, 11);
+        }
+        
+        // Aplica máscara: XXX.XXX.XXX-XX
+        if (value.length > 9) {
+          value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+        } else if (value.length > 6) {
+          value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+        } else if (value.length > 3) {
+          value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+        }
+        
+        e.target.value = value;
+      });
+    }
+  });
+</script>
+{% endblock %}

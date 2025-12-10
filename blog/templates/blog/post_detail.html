@@ -1,0 +1,272 @@
+{% extends 'blog/base.html' %}
+{% block title %}{{ post.titulo }} – MeuBlog{% endblock %}
+
+{% block content %}
+  <article class="post-detail">
+    <h2>{{ post.titulo }}</h2>
+    <p style="font-size: 0.9rem; color: #666;">
+      Por <strong>{{ post.autor }}</strong> em {{ post.criado_em|date:"d M Y" }}
+      {% if post.categoria %}
+        | <span style="color: #d62828;">📂 {{ post.categoria.nome }}</span>
+      {% endif %}
+    </p>
+
+    {% if post.imagem %}
+      <img src="{{ post.imagem.url }}" alt="Imagem do post"
+           style="width: 25%; height: auto; float: right; margin-left: 1em; border-radius: 5px;">
+    {% endif %}
+
+    <div style="margin-top: 1.5em;">
+      {{ post.conteudo|linebreaks }}
+    </div>
+
+    <!-- SISTEMA DE MÚLTIPLAS REAÇÕES -->
+    <div id="reacao-container" style="margin: 2em 0; padding: 1.5em; background-color: #f8f9fa; border-radius: 8px;">
+      <h4 style="margin-top: 0; color: #003f88;">⭐ Reações ({{ total_reacoes }})</h4>
+      
+      {% if user.is_authenticated %}
+        <div class="reacoes-botoes">
+          <!-- BOTÃO: Curtir (Polegar para cima) -->
+          <button class="btn-reacao {% if reacao_usuario.tipo_reacao == 'curtir' %}ativo{% endif %}" 
+                  onclick="enviarReacao('{{ post.slug }}', 'curtir', this)" 
+                  title="Curtir">
+            👍 Curtir <span class="contador-reacao">{{ reacoes_dict.curtir|default:0 }}</span>
+          </button>
+
+          <!-- BOTÃO: Amei (Coração) -->
+          <button class="btn-reacao {% if reacao_usuario.tipo_reacao == 'amei' %}ativo{% endif %}" 
+                  onclick="enviarReacao('{{ post.slug }}', 'amei', this)" 
+                  title="Amei">
+            ❤️ Amei <span class="contador-reacao">{{ reacoes_dict.amei|default:0 }}</span>
+          </button>
+
+          <!-- BOTÃO: Engraçado (Rindo) -->
+          <button class="btn-reacao {% if reacao_usuario.tipo_reacao == 'engraçado' %}ativo{% endif %}" 
+                  onclick="enviarReacao('{{ post.slug }}', 'engraçado', this)" 
+                  title="Engraçado">
+            😂 Engraçado <span class="contador-reacao">{{ reacoes_dict.engraçado|default:0 }}</span>
+          </button>
+
+          <!-- BOTÃO: Não gostei (Polegar para baixo) -->
+          <button class="btn-reacao {% if reacao_usuario.tipo_reacao == 'não_gostei' %}ativo{% endif %}" 
+                  onclick="enviarReacao('{{ post.slug }}', 'não_gostei', this)" 
+                  title="Não gostei">
+            👎 Não gostei <span class="contador-reacao">{{ reacoes_dict.não_gostei|default:0 }}</span>
+          </button>
+        </div>
+      {% else %}
+        <p style="padding: 1em; background-color: #fff3cd; border-radius: 5px; margin: 0;">
+          <a href="{% url 'login' %}">Faça login</a> para reagir aos posts.
+        </p>
+      {% endif %}
+    </div>
+
+    <hr style="margin-top: 2em;">
+
+    <!-- AÇÕES DO AUTOR -->
+    {% if user == post.autor %}
+      <div style="margin-bottom: 2em;">
+        <a href="{% url 'post_edit' slug=post.slug %}" class="text-blue-500">✏️ Editar</a> |
+        <a href="{% url 'post_delete' slug=post.slug %}" class="text-red-500">🗑️ Excluir</a>
+      </div>
+    {% endif %}
+  </article>
+
+  <!-- SEÇÃO DE COMENTÁRIOS -->
+  <section class="comentarios-section">
+    <h3>💬 Comentários ({{ comentarios.count }})</h3>
+    
+    <!-- FORMULÁRIO PARA NOVO COMENTÁRIO -->
+    {% if user.is_authenticated %}
+      <form method="post" class="form-comentario">
+        {% csrf_token %}
+        <textarea name="conteudo" rows="3" placeholder="Deixe seu comentário..." required maxlength="1000"></textarea>
+        <button type="submit">Comentar</button>
+      </form>
+    {% else %}
+      <p style="padding: 1em; background-color: #fff3cd; border-radius: 5px;">
+        <a href="{% url 'login' %}">Faça login</a> para comentar.
+      </p>
+    {% endif %}
+
+    <!-- LISTA DE COMENTÁRIOS -->
+    <div class="comentarios-lista">
+      {% for comentario in comentarios %}
+        <div class="comentario">
+          <div class="comentario-header">
+            <strong>{{ comentario.autor.username }}</strong>
+            <span class="comentario-data">
+              {{ comentario.criado_em|date:"d/m/Y H:i" }}
+              {% if comentario.atualizado_em > comentario.criado_em %}
+                (editado)
+              {% endif %}
+            </span>
+            
+            <div class="comentario-acoes">
+              {% if user == comentario.autor %}
+                <a href="{% url 'editar_comentario' comentario.id %}" 
+                   class="comentario-editar">
+                  ✏️ Editar
+                </a>
+              {% endif %}
+              
+              {% if user == comentario.autor or user.perfil.is_admin %}
+                <a href="{% url 'excluir_comentario' comentario.id %}" 
+                   class="comentario-excluir" 
+                   onclick="return confirm('Tem certeza que deseja excluir este comentário?')">
+                  🗑️ Excluir
+                </a>
+              {% endif %}
+            </div>
+          </div>
+          <p class="comentario-conteudo">{{ comentario.conteudo }}</p>
+        </div>
+      {% empty %}
+        <p class="sem-comentarios">Nenhum comentário ainda. Seja o primeiro!</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function enviarReacao(slug, tipoReacao, botao) {
+  const formData = new FormData();
+  formData.append('tipo_reacao', tipoReacao);
+  formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+  // Desabilita o botão enquanto processa
+  botao.disabled = true;
+
+  fetch(`/post/${slug}/curtir/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken'),
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.sucesso) {
+      // Remove classe 'ativo' de todos os botões de reação
+      document.querySelectorAll('.btn-reacao').forEach(btn => {
+        btn.classList.remove('ativo');
+      });
+
+      // Se uma reação foi adicionada, adiciona classe ao botão clicado
+      if (data.reacao_adicionada) {
+        botao.classList.add('ativo');
+      }
+
+      // Recarrega a página para atualizar contadores
+      location.reload();
+    } else {
+      alert('Erro ao processar reação: ' + data.erro);
+      botao.disabled = false;
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Erro ao processar reação. Tente novamente.');
+    botao.disabled = false;
+  });
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Estilos para o container de reações */
+  #reacao-container h4 {
+    margin-top: 0;
+    color: #003f88;
+  }
+
+  /* Container de botões de reação */
+  .reacoes-botoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-top: 1em;
+  }
+
+  /* Botões de reação */
+  .btn-reacao {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.6em 1.2em;
+    border: 2px solid #ddd;
+    background-color: white;
+    color: #333;
+    font-weight: bold;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
+
+  .btn-reacao:hover {
+    border-color: #003f88;
+    background-color: #f0f6ff;
+    transform: translateY(-2px);
+  }
+
+  /* Botão ativo (usuário já reagiu) */
+  .btn-reacao.ativo {
+    background-color: #d62828;
+    color: white;
+    border-color: #a4161a;
+  }
+
+  .btn-reacao.ativo:hover {
+    background-color: #a4161a;
+    border-color: #a4161a;
+  }
+
+  .btn-reacao:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Contador dentro do botão */
+  .contador-reacao {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.2em 0.5em;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: bold;
+  }
+
+  .btn-reacao.ativo .contador-reacao {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Responsivo */
+  @media (max-width: 768px) {
+    .reacoes-botoes {
+      flex-direction: column;
+    }
+
+    .btn-reacao {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}

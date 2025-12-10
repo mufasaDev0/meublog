@@ -1,0 +1,29 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Entrar - MeuBlog{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-top: 40px;">
+  <img src="{% static 'blog/picapau.png' %}" alt="Pica-Pau de Cabeça Vermelha" height="120">
+  <h2 style="color: #d62828; margin-top: 10px;">Bem-vindo de volta!</h2>
+  <p style="color: #003f88;">Faça login para continuar explorando o MeuBlog.</p>
+</div>
+
+<form method="post" style="max-width: 400px; margin: 30px auto;">
+  {% csrf_token %}
+  <div style="margin-bottom: 20px;">
+    {{ form.username.label_tag }}<br>
+    {{ form.username }}
+  </div>
+  <div style="margin-bottom: 20px;">
+    {{ form.password.label_tag }}<br>
+    {{ form.password }}
+  </div>
+  <button type="submit">Entrar</button>
+</form>
+
+<p style="text-align: center; margin-top: 10px;">
+  <a href="{% url 'password_reset' %}">Esqueceu a senha?</a>
+</p>
+{% endblock %}

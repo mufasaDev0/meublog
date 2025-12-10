@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}MeuBlog{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'blog/style.css' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Blog sobre tecnologia e programação. Aprenda mais sobre desenvolvimento web, Python, Django e muito mais!">
+  <meta name="keywords" content="blog, tecnologia, programação, desenvolvimento web, Python, Django">
+  <meta name="author" content="Mateus Oliveira">
+  <meta name="theme-color" content="#4CAF50">
+
+  {% block extra_head %}{% endblock %}
+  {% block extra_meta %}{% endblock %}
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+  <header>
+    <a href="{% url 'post_list' %}" style="display: flex; align-items: center; gap: 10px;">
+      <img src="{% static 'blog/picapau.png' %}" alt="Logo" height="40">
+      <h1>MeuBlog</h1>
+    </a>
+  </header>
+
+  <nav class="navbar">
+    <ul>
+      <li><a href="{% url 'post_list' %}">🏠 Início</a></li>
+      {% if user.is_authenticated %}
+        <li><a href="{% url 'post_create' %}">📝 Novo Post</a></li>
+        <li class="user-info">Olá, {{ user.username }}</li>
+        <li>
+          <form action="{% url 'logout' %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" style="background: none; border: none; color: #fcbf49; cursor: pointer;">🚪 Sair</button>
+          </form>
+        </li>
+      {% else %}
+        <li><a href="{% url 'login' %}">🔐 Entrar</a></li>
+        <li><a href="{% url 'signup' %}">🆕 Cadastrar</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <p>Feito com Django ♥</p>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+  {% block extra_scripts %}{% endblock %}
+  {% block extra_styles %}{% endblock %}
+  {% block extra_links %}{% endblock %}
+  {% block extra_images %}{% endblock %}
+  {% block extra_fonts %}{% endblock %}
+  {% block extra_icons %}{% endblock %}
+  {% block extra_favicon %}{% endblock %}
+  {% block extra_analytics %}{% endblock %}
+  {% block extra_social %}{% endblock %}
+  {% block extra_comments %}{% endblock %}
+  {% block extra_ads %}{% endblock %}
+
+  {% block extra_scripts_footer %}{% endblock %}
+  {% block extra_styles_footer %}{% endblock %}
+  {% block extra_links_footer %}{% endblock %}
+  {% block extra_images_footer %}{% endblock %}
+  {% block extra_fonts_footer %}{% endblock %}
+  {% block extra_icons_footer %}{% endblock %}
+  {% block extra_favicon_footer %}{% endblock %}
+  {% block extra_analytics_footer %}{% endblock %}
+  {% block extra_social_footer %}{% endblock %}
+  {% block extra_comments_footer %}{% endblock %}
+  {% block extra_ads_footer %}{% endblock %}
+
+</body>
+</html>

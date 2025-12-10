@@ -1,0 +1,15 @@
+{% extends 'blog/base.html' %}
+{% block title %}Confirmar Exclusão – MeuBlog{% endblock %}
+
+{% block content %}
+  <div class="post-form-container">
+    <h2>🗑️ Confirmar Exclusão</h2>
+    <p>Tem certeza de que deseja excluir o post <strong>"{{ post.titulo }}"</strong>?</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Sim, excluir</button>
+      <a href="{% url 'post_detail' slug=post.slug %}" class="button-cancelar">Cancelar</a>
+    </form>
+  </div>
+{% endblock %}
