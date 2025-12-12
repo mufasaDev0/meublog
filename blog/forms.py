@@ -1,118 +1,135 @@
+"""
+Formulários do blog - VERSÃO 100% SQL PURO
+Todos os .objects foram removidos e substituídos por SQL direto
+"""
+
 from django import forms
-from .models import Post, Categoria, PerfilUsuario, Comentario
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.db import connection
+from django.core.exceptions import ValidationError
 from .validators import validar_email_formato, validar_cpf_formato, limpar_cpf, formatar_cpf
 
 
-class PostForm(forms.ModelForm):
+class PostForm(forms.Form):
     """
-    Formulário para criar e editar posts
+    Formulário para criar e editar posts - SQL PURO
     
-    OPERAÇÕES SQL QUANDO O FORMULÁRIO É EXIBIDO:
-    1. POPULAR DROPDOWN DE CATEGORIAS (ORDENADO ALFABETICAMENTE):
-       SELECT * FROM blog_categoria ORDER BY nome ASC
+    OPERAÇÕES SQL:
+    1. Buscar categorias: SELECT * FROM blog_categoria ORDER BY nome
     """
     
-    categoria = forms.ModelChoiceField(
-        queryset=Categoria.objects.all().order_by('nome'),
-        required=False,
-        empty_label="-- Selecione uma categoria --",
-        label="Categoria"
+    titulo = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Digite o título do post'
+        }),
+        label='Título'
     )
     
-    class Meta:
-        model = Post
-        fields = ['titulo', 'conteudo', 'imagem', 'categoria']
-        widgets = {
-            'titulo': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Digite o título do post'
-            }),
-            'conteudo': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 5,
-                'placeholder': 'Escreva o conteúdo do seu post aqui'
-            }),
-            'imagem': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
-            'categoria': forms.Select(attrs={'class': 'form-control'}),
-        }
+    conteudo = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 5,
+            'placeholder': 'Escreva o conteúdo do seu post aqui'
+        }),
+        label='Conteúdo'
+    )
     
-    def clean_titulo(self):
-        titulo = self.cleaned_data.get('titulo')
-        if len(titulo) < 5:
-            raise forms.ValidationError('O título deve ter pelo menos 5 caracteres.')
-        return titulo
+    imagem = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+        label='Imagem'
+    )
+    
+    categoria = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label='Categoria'
+    )
     
     def __init__(self, *args, **kwargs):
+        """
+        Busca categorias do banco usando SQL puro
+        
+        SQL EXECUTADO:
+        SELECT id, nome FROM blog_categoria ORDER BY nome ASC
+        """
         super().__init__(*args, **kwargs)
-        self.fields['categoria'].queryset = Categoria.objects.all().order_by('nome')
-
-
-class ComentarioForm(forms.ModelForm):
-    """
-    Formulário para criar e editar comentários
+        
+        # SQL: Buscar categorias
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, nome 
+                FROM blog_categoria 
+                ORDER BY nome ASC
+            """)
+            
+            categorias = cursor.fetchall()
+        
+        # Criar choices para o dropdown
+        choices = [('', '-- Selecione uma categoria --')]
+        choices.extend([(cat[0], cat[1]) for cat in categorias])
+        
+        self.fields['categoria'].choices = choices
     
-    OPERAÇÕES SQL QUANDO O FORMULÁRIO É SALVO:
-    
-    1. CRIAR COMENTÁRIO:
-       INSERT INTO blog_comentario (post_id, autor_id, conteudo, criado_em, atualizado_em)
-       VALUES ({post_id}, {autor_id}, '{conteudo}', NOW(), NOW())
-    
-    2. EDITAR COMENTÁRIO:
-       UPDATE blog_comentario 
-       SET conteudo = '{novo_conteudo}', atualizado_em = NOW()
-       WHERE id = {comentario_id}
-    """
-    
-    class Meta:
-        model = Comentario
-        fields = ['conteudo']
-        widgets = {
-            'conteudo': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Digite seu comentário...',
-                'maxlength': 1000
-            })
-        }
-        labels = {
-            'conteudo': 'Comentário'
-        }
+    def clean_titulo(self):
+        """Valida título"""
+        titulo = self.cleaned_data.get('titulo', '').strip()
+        
+        if len(titulo) < 5:
+            raise ValidationError('O título deve ter pelo menos 5 caracteres.')
+        
+        return titulo
     
     def clean_conteudo(self):
+        """Valida conteúdo"""
         conteudo = self.cleaned_data.get('conteudo', '').strip()
+        
         if not conteudo:
-            raise forms.ValidationError('O comentário não pode estar vazio.')
+            raise ValidationError('O conteúdo não pode estar vazio.')
+        
+        return conteudo
+
+
+class ComentarioForm(forms.Form):
+    """
+    Formulário para criar e editar comentários - SQL PURO
+    """
+    
+    conteudo = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Digite seu comentário...',
+            'maxlength': 1000
+        }),
+        label='Comentário',
+        max_length=1000
+    )
+    
+    def clean_conteudo(self):
+        """Valida conteúdo do comentário"""
+        conteudo = self.cleaned_data.get('conteudo', '').strip()
+        
+        if not conteudo:
+            raise ValidationError('O comentário não pode estar vazio.')
+        
         if len(conteudo) < 3:
-            raise forms.ValidationError('O comentário deve ter pelo menos 3 caracteres.')
+            raise ValidationError('O comentário deve ter pelo menos 3 caracteres.')
+        
         return conteudo
 
 
 class CustomUserCreationForm(UserCreationForm):
     """
-    Formulário de cadastro personalizado com email e CPF obrigatórios
+    Formulário de cadastro personalizado - SQL PURO
     
-    OPERAÇÕES SQL QUANDO O FORMULÁRIO É SALVO:
-    
-    1. VERIFICAR SE USERNAME JÁ EXISTE:
-       SELECT COUNT(*) FROM auth_user WHERE username = '{username}'
-    
-    2. VERIFICAR SE EMAIL JÁ EXISTE:
-       SELECT COUNT(*) FROM auth_user WHERE email = '{email}'
-    
-    3. VERIFICAR SE CPF JÁ EXISTE:
-       SELECT COUNT(*) FROM blog_perfilusuario WHERE cpf = '{cpf}'
-    
-    4. CRIAR NOVO USUÁRIO:
-       INSERT INTO auth_user 
-       (username, email, password, is_active, is_staff, is_superuser, date_joined)
-       VALUES ('{username}', '{email}', '{hashed_password}', 1, 0, 0, NOW())
-    
-    5. CRIAR PERFIL DO USUÁRIO:
-       INSERT INTO blog_perfilusuario 
-       (usuario_id, cpf, tipo_usuario, ativo, criado_em, atualizado_em)
-       VALUES ({user_id}, '{cpf}', 'comum', TRUE, NOW(), NOW())
+    OPERAÇÕES SQL:
+    1. SELECT COUNT(*) FROM auth_user WHERE username = %s
+    2. SELECT COUNT(*) FROM auth_user WHERE email = %s
+    3. SELECT COUNT(*) FROM blog_perfilusuario WHERE cpf = %s
     """
     
     email = forms.EmailField(
@@ -160,162 +177,206 @@ class CustomUserCreationForm(UserCreationForm):
     
     def clean_email(self):
         """
-        Validação do email
+        Validação do email usando SQL PURO
         
-        OPERAÇÕES SQL:
-        1. Valida formato (em memória)
-        2. SELECT COUNT(*) FROM auth_user WHERE email = '{email}'
+        OPERAÇÃO SQL:
+        SELECT COUNT(*) FROM auth_user WHERE email = %s
         """
         email = self.cleaned_data.get('email')
         
         # Valida o formato do email
         validar_email_formato(email)
         
-        # SQL EXECUTADO:
-        # SELECT COUNT(*) FROM auth_user WHERE email = '{email}'
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('Este email já está cadastrado no sistema.')
+        # SQL: Verificar se email já existe
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM auth_user 
+                WHERE email = %s
+            """, [email])
+            
+            count = cursor.fetchone()[0]
+        
+        if count > 0:
+            raise ValidationError('Este email já está cadastrado no sistema.')
         
         return email
     
     def clean_cpf(self):
         """
-        Validação do CPF
+        Validação do CPF usando SQL PURO
         
-        OPERAÇÕES SQL:
-        1. Valida formato e dígitos verificadores (em memória)
-        2. SELECT COUNT(*) FROM blog_perfilusuario WHERE cpf = '{cpf}'
+        OPERAÇÃO SQL:
+        SELECT COUNT(*) FROM blog_perfilusuario WHERE cpf = %s
         """
         cpf = self.cleaned_data.get('cpf')
         
         # Valida o formato e dígitos verificadores do CPF
         cpf_limpo = validar_cpf_formato(cpf)
         
-        # SQL EXECUTADO:
-        # SELECT COUNT(*) FROM blog_perfilusuario WHERE cpf = '{cpf_limpo}'
-        if PerfilUsuario.objects.filter(cpf=cpf_limpo).exists():
-            raise forms.ValidationError('Este CPF já está cadastrado no sistema.')
+        # SQL: Verificar se CPF já existe
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM blog_perfilusuario 
+                WHERE cpf = %s
+            """, [cpf_limpo])
+            
+            count = cursor.fetchone()[0]
+        
+        if count > 0:
+            raise ValidationError('Este CPF já está cadastrado no sistema.')
         
         return cpf_limpo
     
     def clean_username(self):
         """
-        Validação do username
+        Validação do username usando SQL PURO
         
         OPERAÇÃO SQL:
-        SELECT COUNT(*) FROM auth_user WHERE username = '{username}'
+        SELECT COUNT(*) FROM auth_user WHERE username = %s
         """
         username = self.cleaned_data.get('username')
         
         if len(username) < 3:
-            raise forms.ValidationError('O nome de usuário deve ter pelo menos 3 caracteres.')
+            raise ValidationError('O nome de usuário deve ter pelo menos 3 caracteres.')
+        
+        # SQL: Verificar se username já existe
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM auth_user 
+                WHERE username = %s
+            """, [username])
+            
+            count = cursor.fetchone()[0]
+        
+        if count > 0:
+            raise ValidationError('Este nome de usuário já está em uso.')
         
         return username
     
     def save(self, commit=True):
         """
-        Salva o usuário e cria o perfil
+        Salva o usuário e cria o perfil usando SQL PURO
         
         OPERAÇÕES SQL:
         1. INSERT INTO auth_user (username, email, password, ...)
-        2. INSERT INTO blog_perfilusuario (usuario_id, cpf, tipo_usuario, ativo, ...)
+        2. INSERT INTO blog_perfilusuario (usuario_id, cpf, ...)
         """
-        # SQL EXECUTADO:
-        # INSERT INTO auth_user 
-        # (username, email, password, is_active, date_joined)
-        # VALUES ('{username}', '{email}', '{hashed_password}', 1, NOW())
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
+        from django.contrib.auth.hashers import make_password
+        from django.db import transaction
         
-        if commit:
-            user.save()
+        if not commit:
+            # Se não for para commitar, retorna None
+            return None
+        
+        username = self.cleaned_data['username']
+        email = self.cleaned_data['email']
+        password = self.cleaned_data['password1']
+        cpf = self.cleaned_data['cpf']
+        
+        # Hash da senha
+        hashed_password = make_password(password)
+        
+        # Transação atômica: cria usuário + perfil
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                # SQL 1: Inserir usuário
+                cursor.execute("""
+                    INSERT INTO auth_user 
+                    (username, email, password, is_active, is_staff, 
+                     is_superuser, date_joined, first_name, last_name)
+                    VALUES (%s, %s, %s, TRUE, FALSE, FALSE, NOW(), '', '')
+                    RETURNING id
+                """, [username, email, hashed_password])
+                
+                user_id = cursor.fetchone()[0]
+                
+                # SQL 2: Inserir perfil
+                cursor.execute("""
+                    INSERT INTO blog_perfilusuario 
+                    (usuario_id, cpf, tipo_usuario, ativo, criado_em, atualizado_em)
+                    VALUES (%s, %s, 'comum', TRUE, NOW(), NOW())
+                """, [user_id, cpf])
+        
+        # Reconstruir objeto User para retornar (necessário para login)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, username, password, first_name, last_name, email, 
+                       is_staff, is_active, is_superuser, date_joined, last_login
+                FROM auth_user 
+                WHERE id = %s
+            """, [user_id])
             
-            # SQL EXECUTADO:
-            # INSERT INTO blog_perfilusuario 
-            # (usuario_id, cpf, tipo_usuario, ativo, criado_em, atualizado_em)
-            # VALUES ({user.id}, '{cpf}', 'comum', TRUE, NOW(), NOW())
-            PerfilUsuario.objects.create(
-                usuario=user,
-                cpf=self.cleaned_data['cpf'],
-                tipo_usuario='comum',
-                ativo=True
-            )
+            user_data = cursor.fetchone()
+        
+        user = User(
+            id=user_data[0],
+            username=user_data[1],
+            password=user_data[2],
+            first_name=user_data[3],
+            last_name=user_data[4],
+            email=user_data[5],
+            is_staff=user_data[6],
+            is_active=user_data[7],
+            is_superuser=user_data[8],
+            date_joined=user_data[9],
+            last_login=user_data[10]
+        )
+        
+        # Marcar como "do banco" para que o Django não tente salvar novamente
+        user._state.adding = False
+        user._state.db = 'default'
         
         return user
 
 
-
 """
 ========================================
-FLUXO COMPLETO DE OPERAÇÕES SQL
+CONVERSÃO COMPLETA PARA SQL PURO
 ========================================
 
-EXEMPLO 1: CRIAR UM POST
---------------------------
-1. Usuário acessa /post/novo/
-   SQL: SELECT * FROM blog_categoria  (para popular dropdown)
+ANTES (ORM):
+------------
+Categoria.objects.all().order_by('nome')
+User.objects.filter(email=email).exists()
+PerfilUsuario.objects.filter(cpf=cpf).exists()
+PerfilUsuario.objects.create(...)
 
-2. Usuário preenche formulário e clica em "Publicar"
-   SQL: INSERT INTO blog_post (titulo, slug, autor_id, conteudo, imagem, categoria_id, criado_em, atualizado_em)
-        VALUES ('Meu Post', 'meu-post', 1, 'Conteúdo...', 'posts/imagem.jpg', 2, NOW(), NOW())
-
-3. Redirecionamento para página do post
-   SQL: SELECT * FROM blog_post WHERE slug = 'meu-post'
-
-
-EXEMPLO 2: EDITAR UM POST
---------------------------
-1. Usuário acessa /post/meu-post/editar/
-   SQL 1: SELECT * FROM blog_post WHERE slug = 'meu-post'
-   SQL 2: SELECT * FROM blog_categoria  (para popular dropdown)
-
-2. Usuário altera dados e clica em "Atualizar"
-   SQL: UPDATE blog_post 
-        SET titulo='Novo Título', conteudo='Novo conteúdo', atualizado_em=NOW()
-        WHERE id = 1
-
-
-EXEMPLO 3: CADASTRAR USUÁRIO
------------------------------
-1. Usuário acessa /accounts/signup/
-   (Nenhuma query SQL)
-
-2. Usuário preenche dados e clica em "Cadastrar"
-   SQL 1: SELECT COUNT(*) FROM auth_user WHERE username = 'novousuario'  (validação)
-   SQL 2: SELECT COUNT(*) FROM auth_user WHERE email = 'email@exemplo.com'  (validação)
-   SQL 3: INSERT INTO auth_user (username, email, password, date_joined) 
-          VALUES ('novousuario', 'email@exemplo.com', 'hashed_pwd', NOW())
-   SQL 4: INSERT INTO django_session (session_key, session_data, expire_date)
-          VALUES ('abc123...', 'encrypted_data', '2025-12-01 10:00:00')
-
-
-EXEMPLO 4: DELETAR POST COM CASCADE
-------------------------------------
-1. Usuário clica em "Excluir post"
-   SQL 1: SELECT * FROM blog_post WHERE slug = 'meu-post'
-
-2. Usuário confirma exclusão
-   SQL 2: DELETE FROM blog_comentario WHERE post_id = 1  (CASCADE automático)
-   SQL 3: DELETE FROM blog_reacaousuariopost WHERE post_id = 1  (CASCADE automático)
-   SQL 4: DELETE FROM blog_post WHERE id = 1
+DEPOIS (SQL PURO):
+------------------
+SELECT * FROM blog_categoria ORDER BY nome
+SELECT COUNT(*) FROM auth_user WHERE email = %s
+SELECT COUNT(*) FROM blog_perfilusuario WHERE cpf = %s
+INSERT INTO blog_perfilusuario VALUES (...)
 
 ========================================
-VALIDAÇÕES E QUERIES DE VERIFICAÇÃO
+BENEFÍCIOS:
+========================================
+✅ 100% SQL puro
+✅ Controle total sobre queries
+✅ Sem "magia" do ORM
+✅ Queries visíveis e auditáveis
+
+========================================
+LOCALIZAÇÃO DAS QUERIES:
 ========================================
 
-Todos os formulários do Django executam queries de validação antes de salvar:
+PostForm.__init__() - linha 50
+  → SELECT blog_categoria
 
-1. UNIQUE CONSTRAINTS:
-   - Verifica se slug do post é único
-   - Verifica se username é único
-   - Verifica se email é único
+CustomUserCreationForm.clean_email() - linha 148
+  → SELECT COUNT auth_user WHERE email
 
-2. FOREIGN KEY VALIDATION:
-   - Verifica se categoria existe
-   - Verifica se autor existe
-   - Verifica se post existe (para comentários)
+CustomUserCreationForm.clean_cpf() - linha 173
+  → SELECT COUNT blog_perfilusuario WHERE cpf
 
-3. CLEAN METHODS:
-   - Executam queries customizadas de validação
-   - Exemplo: verificar se email já está cadastrado
+CustomUserCreationForm.clean_username() - linha 198
+  → SELECT COUNT auth_user WHERE username
+
+CustomUserCreationForm.save() - linha 245
+  → INSERT auth_user
+  → INSERT blog_perfilusuario
+  → SELECT auth_user (para retornar objeto)
 """
