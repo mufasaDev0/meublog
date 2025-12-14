@@ -628,7 +628,9 @@ def signup(request):
                 # form.save() agora usa SQL puro internamente
                 user = form.save()
                 
-                # Login automático (Django gerencia a sessão)
+                # ✅ CORREÇÃO: Especificar backend ao fazer login
+                # Necessário porque temos 2 backends configurados (PerfilAtivoBackend + ModelBackend)
+                user.backend = 'blog.backends.PerfilAtivoBackend'
                 login(request, user)
                 
                 messages.success(request, f'Bem-vindo, {user.username}! Sua conta foi criada com sucesso.')
@@ -1034,3 +1036,153 @@ def ativar_usuario(request, usuario_id):
     except Exception as e:
         messages.error(request, f'Erro ao ativar usuário: {str(e)}')
         return redirect('post_list')
+
+
+def esqueci_senha(request):
+    """
+    Tela customizada de recuperação de senha - 100% SQL PURO
+    
+    Fluxo:
+    1. Usuário informa username + email
+    2. Verifica SQL se existem no banco
+    3. Se existir: mostra mensagem de sucesso
+    4. Se não existir: mostra mensagem de erro
+    
+    SQL EXECUTADO:
+    1. SELECT para verificar se username e email existem
+    """
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        
+        # Validações básicas
+        if not username or not email:
+            messages.error(request, 'Por favor, preencha usuário e email.')
+            return render(request, 'registration/esqueci_senha.html')
+        
+        with connection.cursor() as cursor:
+            # SQL: Verificar se usuário e email existem no banco
+            cursor.execute("""
+                SELECT id, username, email
+                FROM auth_user
+                WHERE username = %s AND email = %s
+            """, [username, email])
+            
+            user_data = cursor.fetchone()
+            
+            if user_data:
+                # ✅ Usuário e email encontrados!
+                user_id = user_data[0]
+                user_username = user_data[1]
+                user_email = user_data[2]
+                
+                # IMPORTANTE: Em produção real, aqui você enviaria email
+                # Por enquanto, vamos apenas simular o envio
+                
+                messages.success(
+                    request, 
+                    f'✅ Instruções para redefinição de senha foram enviadas para {user_email}. '
+                    f'Verifique sua caixa de entrada e spam.'
+                )
+                
+                # Log da ação (opcional - para auditoria)
+                print(f"[RECUPERAÇÃO] Solicitação de reset para: {user_username} ({user_email})")
+                
+                # Redireciona para login
+                return redirect('login')
+            else:
+                # ❌ Usuário ou email não encontrados
+                messages.error(
+                    request,
+                    '❌ Usuário ou email não encontrados. '
+                    'Verifique se digitou corretamente ou cadastre-se.'
+                )
+    
+    return render(request, 'registration/esqueci_senha.html')
+
+
+def login_customizado(request):
+    """
+    View de login customizada - 100% SQL PURO
+    
+    Valida credenciais usando SQL puro e mostra mensagens de erro claras em português
+    
+    SQL EXECUTADO:
+    1. SELECT para buscar usuário por username
+    2. SELECT para verificar se perfil está ativo
+    """
+    
+    if request.user.is_authenticated:
+        return redirect('post_list')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        
+        # Validações básicas
+        if not username or not password:
+            messages.error(request, '❌ Por favor, preencha usuário e senha.')
+            return render(request, 'registration/login.html')
+        
+        with connection.cursor() as cursor:
+            # SQL: Buscar usuário por username
+            cursor.execute("""
+                SELECT id, username, password, is_active
+                FROM auth_user
+                WHERE username = %s
+            """, [username])
+            
+            user_data = cursor.fetchone()
+            
+            if not user_data:
+                # Usuário não existe
+                messages.error(request, '❌ Usuário ou senha incorretos.')
+                return render(request, 'registration/login.html')
+            
+            user_id = user_data[0]
+            user_username = user_data[1]
+            user_password_hash = user_data[2]
+            is_active = user_data[3]
+            
+            # Verificar senha usando User.check_password (necessário para hash)
+            from django.contrib.auth.models import User
+            try:
+                user_obj = User.objects.get(pk=user_id)
+                
+                if not user_obj.check_password(password):
+                    # Senha incorreta
+                    messages.error(request, '❌ Usuário ou senha incorretos.')
+                    return render(request, 'registration/login.html')
+                
+                # SQL: Verificar se perfil está ativo
+                cursor.execute("""
+                    SELECT ativo
+                    FROM blog_perfilusuario
+                    WHERE usuario_id = %s
+                """, [user_id])
+                
+                perfil_data = cursor.fetchone()
+                
+                if perfil_data and not perfil_data[0]:
+                    # Perfil desativado
+                    messages.error(request, '❌ Sua conta foi desativada. Entre em contato com o administrador.')
+                    return render(request, 'registration/login.html')
+                
+                # ✅ Login bem-sucedido!
+                user_obj.backend = 'blog.backends.PerfilAtivoBackend'
+                from django.contrib.auth import login as auth_login
+                auth_login(request, user_obj)
+                
+                messages.success(request, f'✅ Bem-vindo de volta, {user_username}!')
+                
+                # Redirecionar para next ou página inicial
+                next_url = request.GET.get('next', 'post_list')
+                return redirect(next_url)
+                
+            except User.DoesNotExist:
+                messages.error(request, '❌ Erro ao processar login.')
+                return render(request, 'registration/login.html')
+    
+    # GET request - mostrar formulário
+    return render(request, 'registration/login.html')

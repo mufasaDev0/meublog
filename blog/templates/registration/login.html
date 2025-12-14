@@ -10,20 +10,107 @@
   <p style="color: #003f88;">Faça login para continuar explorando o MeuBlog.</p>
 </div>
 
-<form method="post" style="max-width: 400px; margin: 30px auto;">
+<form method="post" style="max-width: 400px; margin: 30px auto; background: white; padding: 2em; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);">
   {% csrf_token %}
+  
+  <!-- Campo Username -->
   <div style="margin-bottom: 20px;">
-    {{ form.username.label_tag }}<br>
-    {{ form.username }}
+    <label for="id_username" style="display: block; font-weight: bold; color: #003f88; margin-bottom: 0.5em;">
+      👤 Nome de Usuário
+    </label>
+    <input 
+      type="text" 
+      name="username" 
+      id="id_username"
+      required
+      placeholder="Digite seu nome de usuário"
+      style="width: 100%; padding: 0.7em; border: 2px solid #ccc; border-radius: 5px; font-size: 1rem;"
+      value="{{ request.POST.username|default:'' }}"
+    >
   </div>
+  
+  <!-- Campo Password -->
   <div style="margin-bottom: 20px;">
-    {{ form.password.label_tag }}<br>
-    {{ form.password }}
+    <label for="id_password" style="display: block; font-weight: bold; color: #003f88; margin-bottom: 0.5em;">
+      🔒 Senha
+    </label>
+    <input 
+      type="password" 
+      name="password" 
+      id="id_password"
+      required
+      placeholder="Digite sua senha"
+      style="width: 100%; padding: 0.7em; border: 2px solid #ccc; border-radius: 5px; font-size: 1rem;"
+    >
   </div>
-  <button type="submit">Entrar</button>
+  
+  <button type="submit" style="width: 100%; padding: 0.8em; background-color: #d62828; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s;">
+    🔓 Entrar
+  </button>
 </form>
 
 <p style="text-align: center; margin-top: 10px;">
-  <a href="{% url 'password_reset' %}">Esqueceu a senha?</a>
+  <a href="{% url 'esqueci_senha' %}">🔑 Esqueceu a senha?</a>
 </p>
+
+<p style="text-align: center; margin-top: 1em; color: #666;">
+  Ainda não tem conta? <a href="{% url 'signup' %}" style="color: #003f88; font-weight: bold;">Cadastre-se</a>
+</p>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Estilo dos inputs */
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.7em;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: all 0.3s;
+  }
+
+  input[type="text"]:focus,
+  input[type="password"]:focus {
+    outline: none;
+    border-color: #003f88;
+    box-shadow: 0 0 0 3px rgba(0, 63, 136, 0.1);
+  }
+
+  /* Botão hover */
+  button:hover {
+    background-color: #a4161a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Animação do form */
+  form {
+    animation: slideIn 0.5s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Auto-focus no campo de usuário
+  document.addEventListener('DOMContentLoaded', function() {
+    const usernameField = document.getElementById('id_username');
+    if (usernameField && !usernameField.value) {
+      usernameField.focus();
+    }
+  });
+</script>
 {% endblock %}

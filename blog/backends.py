@@ -82,8 +82,7 @@ class PerfilAtivoBackend(ModelBackend):
                         
                         return user
                     else:
-                        # Usuário sem perfil (criado antes da migração)
-                        # Permite login mas deveria criar o perfil
+                        # Usuário sem perfil
                         return user
                 
                 return None
