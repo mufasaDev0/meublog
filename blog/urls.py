@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     # Posts
@@ -20,26 +19,21 @@ urlpatterns = [
     # Gestão de usuários (apenas admin)
     path('usuario/<int:usuario_id>/desativar/', views.desativar_usuario, name='desativar_usuario'),
     path('usuario/<int:usuario_id>/ativar/', views.ativar_usuario, name='ativar_usuario'),
-
-    # Recuperação de senha com templates personalizados
-    path(
-        'accounts/password_reset/',
-        auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html'),
-        name='password_reset'
-    ),
-    path(
-        'accounts/password_reset/done/',
-        auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'),
-        name='password_reset_done'
-    ),
-    path(
-        'accounts/reset/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'),
-        name='password_reset_confirm'
-    ),
-    path(
-        'accounts/reset/done/',
-        auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
-        name='password_reset_complete'
-    ),
+    
+    # ============================================
+    # PAINEL ADMINISTRATIVO
+    # ============================================
+    path('painel-admin/', views.painel_admin, name='painel_admin'),
+    
+    # Categorias (CRUD completo)
+    path('admin/categorias/', views.admin_categorias, name='admin_categorias'),
+    path('admin/categorias/criar/', views.admin_categoria_criar, name='admin_categoria_criar'),
+    path('admin/categorias/<int:categoria_id>/editar/', views.admin_categoria_editar, name='admin_categoria_editar'),
+    path('admin/categorias/<int:categoria_id>/excluir/', views.admin_categoria_excluir, name='admin_categoria_excluir'),
+    
+    # Posts (listagem para admin)
+    path('admin/posts/', views.admin_posts, name='admin_posts'),
+    
+    # Usuários (listagem para admin)
+    path('admin/usuarios/', views.admin_usuarios, name='admin_usuarios'),
 ]

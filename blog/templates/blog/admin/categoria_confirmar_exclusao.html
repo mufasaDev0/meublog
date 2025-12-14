@@ -1,0 +1,73 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Confirmar Exclusão – Admin{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 5em auto; padding: 2em;">
+  
+  <div style="background: white; padding: 3em; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+    
+    <div style="font-size: 4em; margin-bottom: 0.5em;">⚠️</div>
+    
+    <h2 style="color: #dc3545; margin-bottom: 1em;">
+      Confirmar Exclusão
+    </h2>
+
+    <div style="background-color: #f8d7da; padding: 1.5em; border-radius: 8px; border-left: 4px solid #dc3545; margin-bottom: 2em; text-align: left;">
+      <p style="margin: 0; color: #721c24; font-size: 1.1em;">
+        <strong>Tem certeza que deseja excluir a categoria:</strong>
+      </p>
+      <p style="margin: 1em 0 0 0; font-size: 1.3em; font-weight: bold; color: #003f88;">
+        "{{ categoria.nome }}"?
+      </p>
+    </div>
+
+    <div style="background-color: #fff3cd; padding: 1.5em; border-radius: 8px; margin-bottom: 2em; text-align: left;">
+      <p style="margin: 0; color: #856404;">
+        <strong>📊 Informações:</strong>
+      </p>
+      <ul style="margin: 0.5em 0 0 1.5em; color: #856404;">
+        <li>Esta categoria possui <strong>{{ categoria.total_posts }} post{{ categoria.total_posts|pluralize }}</strong></li>
+        <li>Os posts <strong>NÃO</strong> serão excluídos</li>
+        <li>Os posts ficarão sem categoria (NULL)</li>
+        <li>Esta ação <strong>NÃO PODE</strong> ser desfeita</li>
+      </ul>
+    </div>
+
+    <form method="post" style="display: inline;">
+      {% csrf_token %}
+      
+      <div style="display: flex; gap: 1em; justify-content: center; margin-top: 2em;">
+        
+        <button 
+          type="submit" 
+          style="padding: 1em 2em; background-color: #dc3545; color: white; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer;"
+        >
+          🗑️ Sim, Excluir
+        </button>
+        
+        <a 
+          href="{% url 'admin_categorias' %}" 
+          style="padding: 1em 2em; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; display: inline-flex; align-items: center;"
+        >
+          ← Não, Cancelar
+        </a>
+        
+      </div>
+    </form>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+</style>
+{% endblock %}

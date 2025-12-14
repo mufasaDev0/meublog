@@ -1,0 +1,99 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ acao }} Categoria – Admin{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 3em auto; padding: 2em;">
+  
+  <div style="text-align: center; margin-bottom: 2em;">
+    <h1 style="color: #003f88; margin: 0;">
+      {% if acao == 'Criar' %}
+        ➕ Nova Categoria
+      {% else %}
+        ✏️ Editar Categoria
+      {% endif %}
+    </h1>
+  </div>
+
+  <div style="background: white; padding: 3em; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    
+    <form method="post">
+      {% csrf_token %}
+      
+      <div style="margin-bottom: 2em;">
+        <label for="id_nome" style="display: block; font-weight: bold; color: #003f88; margin-bottom: 0.5em; font-size: 1.1em;">
+          Nome da Categoria
+        </label>
+        <input 
+          type="text" 
+          name="nome" 
+          id="id_nome"
+          value="{% if categoria %}{{ categoria.nome }}{% endif %}"
+          required
+          minlength="3"
+          maxlength="100"
+          placeholder="Ex: Tecnologia, Esportes, Política..."
+          style="width: 100%; padding: 0.8em; border: 2px solid #ccc; border-radius: 5px; font-size: 1rem;"
+        >
+        <small style="display: block; margin-top: 0.5em; color: #666;">
+          Mínimo de 3 caracteres, máximo de 100.
+        </small>
+      </div>
+
+      <div style="display: flex; gap: 1em; margin-top: 2em;">
+        <button 
+          type="submit" 
+          style="flex: 1; padding: 1em; background-color: {% if acao == 'Criar' %}#28a745{% else %}#ffc107{% endif %}; color: {% if acao == 'Criar' %}white{% else %}#000{% endif %}; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer;"
+        >
+          {% if acao == 'Criar' %}
+            💾 Criar Categoria
+          {% else %}
+            💾 Salvar Alterações
+          {% endif %}
+        </button>
+        
+        <a 
+          href="{% url 'admin_categorias' %}" 
+          style="flex: 1; padding: 1em; background-color: #6c757d; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; justify-content: center;"
+        >
+          ← Cancelar
+        </a>
+      </div>
+    </form>
+
+  </div>
+
+  <!-- EXEMPLOS -->
+  {% if acao == 'Criar' %}
+  <div style="margin-top: 2em; padding: 1.5em; background-color: #e7f3ff; border-left: 4px solid #0066cc; border-radius: 5px;">
+    <strong>💡 Sugestões de Categorias:</strong>
+    <ul style="margin: 0.5em 0 0 1.5em; color: #666;">
+      <li>Tecnologia</li>
+      <li>Programação</li>
+      <li>Esportes</li>
+      <li>Política</li>
+      <li>Entretenimento</li>
+      <li>Notícias</li>
+    </ul>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  input[type="text"]:focus {
+    outline: none;
+    border-color: #003f88;
+    box-shadow: 0 0 0 3px rgba(0, 63, 136, 0.1);
+  }
+
+  button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+</style>
+{% endblock %}

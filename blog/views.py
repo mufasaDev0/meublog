@@ -479,17 +479,23 @@ def editar_comentario(request, comentario_id):
     Permite editar comentário (só o autor)
     
     SQL EXECUTADO:
-    1. SELECT comentário por ID
+    1. SELECT comentário por ID com JOIN
     2. UPDATE comentário (se POST)
     """
     try:
         with connection.cursor() as cursor:
-            # SQL: Buscar comentário
+            # SQL: Buscar comentário com post e autor
             cursor.execute("""
-                SELECT c.id, c.conteudo, c.criado_em, c.atualizado_em,
-                       c.post_id, c.autor_id,
-                       p.slug as post_slug,
-                       u.username as autor_username
+                SELECT 
+                    c.id,
+                    c.conteudo,
+                    c.criado_em,
+                    c.atualizado_em,
+                    c.post_id,
+                    c.autor_id,
+                    p.slug as post_slug,
+                    p.titulo as post_titulo,
+                    u.username as autor_username
                 FROM blog_comentario c
                 INNER JOIN blog_post p ON c.post_id = p.id
                 INNER JOIN auth_user u ON c.autor_id = u.id
@@ -502,13 +508,21 @@ def editar_comentario(request, comentario_id):
                 messages.error(request, 'Comentário não encontrado.')
                 return redirect('post_list')
             
+            # Montar dicionário do comentário
             comentario = {
                 'id': comentario_data[0],
                 'conteudo': comentario_data[1],
                 'criado_em': comentario_data[2],
                 'atualizado_em': comentario_data[3],
-                'post': {'id': comentario_data[4], 'slug': comentario_data[6]},
-                'autor': {'id': comentario_data[5], 'username': comentario_data[7]}
+                'post': {
+                    'id': comentario_data[4],
+                    'slug': comentario_data[6],
+                    'titulo': comentario_data[7]
+                },
+                'autor': {
+                    'id': comentario_data[5],
+                    'username': comentario_data[8]
+                }
             }
             
             # Verificar se o usuário é o autor
@@ -534,26 +548,13 @@ def editar_comentario(request, comentario_id):
                     messages.success(request, 'Comentário atualizado com sucesso!')
                     return redirect('post_detail', slug=comentario['post']['slug'])
             
-            # Mock do form para o template
-            class MockForm:
-                def __init__(self, conteudo):
-                    self.conteudo = type('obj', (object,), {
-                        'id_for_label': 'id_conteudo',
-                        'label': 'Comentário',
-                        'errors': [],
-                        'help_text': ''
-                    })()
-                    self.conteudo_value = conteudo
-            
-            form = MockForm(comentario['conteudo'])
-            
+            # Renderizar template com formulário simples HTML
             return render(request, 'blog/comentario_form.html', {
-                'form': form,
                 'comentario': comentario
             })
             
     except Exception as e:
-        messages.error(request, f'Erro: {str(e)}')
+        messages.error(request, f'Erro ao editar comentário: {str(e)}')
         return redirect('post_list')
 
 
@@ -1186,3 +1187,357 @@ def login_customizado(request):
     
     # GET request - mostrar formulário
     return render(request, 'registration/login.html')
+
+
+# ============================================
+# PAINEL ADMINISTRATIVO - 100% SQL PURO
+# ============================================
+
+@login_required
+def painel_admin(request):
+    """
+    Dashboard administrativo - SQL PURO
+    
+    SQL EXECUTADO:
+    1. Conta total de posts
+    2. Conta total de usuários
+    3. Conta total de comentários
+    4. Conta total de categorias
+    5. Lista últimos 5 posts
+    6. Lista últimos 5 usuários
+    """
+    
+    # Verificar se é admin
+    if not usuario_e_admin(request.user):
+        messages.error(request, 'Acesso negado. Apenas administradores.')
+        return redirect('post_list')
+    
+    with connection.cursor() as cursor:
+        # SQL: Contar posts
+        cursor.execute("SELECT COUNT(*) FROM blog_post")
+        total_posts = cursor.fetchone()[0]
+        
+        # SQL: Contar usuários
+        cursor.execute("SELECT COUNT(*) FROM auth_user")
+        total_usuarios = cursor.fetchone()[0]
+        
+        # SQL: Contar comentários
+        cursor.execute("SELECT COUNT(*) FROM blog_comentario")
+        total_comentarios = cursor.fetchone()[0]
+        
+        # SQL: Contar categorias
+        cursor.execute("SELECT COUNT(*) FROM blog_categoria")
+        total_categorias = cursor.fetchone()[0]
+        
+        # SQL: Últimos 5 posts
+        cursor.execute("""
+            SELECT p.id, p.titulo, p.slug, p.criado_em, u.username
+            FROM blog_post p
+            INNER JOIN auth_user u ON p.autor_id = u.id
+            ORDER BY p.criado_em DESC
+            LIMIT 5
+        """)
+        ultimos_posts = cursor.fetchall()
+        
+        # SQL: Últimos 5 usuários
+        cursor.execute("""
+            SELECT u.id, u.username, u.email, u.date_joined, p.ativo
+            FROM auth_user u
+            LEFT JOIN blog_perfilusuario p ON u.id = p.usuario_id
+            ORDER BY u.date_joined DESC
+            LIMIT 5
+        """)
+        ultimos_usuarios = cursor.fetchall()
+    
+    context = {
+        'total_posts': total_posts,
+        'total_usuarios': total_usuarios,
+        'total_comentarios': total_comentarios,
+        'total_categorias': total_categorias,
+        'ultimos_posts': ultimos_posts,
+        'ultimos_usuarios': ultimos_usuarios,
+    }
+    
+    return render(request, 'blog/admin/dashboard.html', context)
+
+
+@login_required
+def admin_categorias(request):
+    """
+    Listar todas as categorias - SQL PURO
+    
+    SQL EXECUTADO:
+    SELECT categorias com contagem de posts
+    """
+    
+    if not usuario_e_admin(request.user):
+        messages.error(request, 'Acesso negado. Apenas administradores.')
+        return redirect('post_list')
+    
+    with connection.cursor() as cursor:
+        # SQL: Listar categorias com contagem de posts
+        cursor.execute("""
+            SELECT 
+                c.id,
+                c.nome,
+                COUNT(p.id) AS total_posts
+            FROM blog_categoria c
+            LEFT JOIN blog_post p ON c.id = p.categoria_id
+            GROUP BY c.id, c.nome
+            ORDER BY c.nome ASC
+        """)
+        
+        categorias = cursor.fetchall()
+    
+    return render(request, 'blog/admin/categorias_lista.html', {
+        'categorias': categorias
+    })
+
+
+@login_required
+def admin_categoria_criar(request):
+    """
+    Criar nova categoria - SQL PURO
+    
+    SQL EXECUTADO:
+    1. SELECT para verificar se nome já existe
+    2. INSERT para criar categoria
+    """
+    
+    if not usuario_e_admin(request.user):
+        messages.error(request, 'Acesso negado. Apenas administradores.')
+        return redirect('post_list')
+    
+    if request.method == 'POST':
+        nome = request.POST.get('nome', '').strip()
+        
+        if not nome:
+            messages.error(request, 'O nome da categoria não pode estar vazio.')
+        elif len(nome) < 3:
+            messages.error(request, 'O nome deve ter pelo menos 3 caracteres.')
+        else:
+            with connection.cursor() as cursor:
+                # SQL: Verificar se categoria já existe
+                cursor.execute("""
+                    SELECT COUNT(*) FROM blog_categoria WHERE nome = %s
+                """, [nome])
+                
+                if cursor.fetchone()[0] > 0:
+                    messages.error(request, 'Já existe uma categoria com este nome.')
+                else:
+                    # SQL: Inserir nova categoria
+                    cursor.execute("""
+                        INSERT INTO blog_categoria (nome)
+                        VALUES (%s)
+                    """, [nome])
+                    
+                    messages.success(request, f'Categoria "{nome}" criada com sucesso!')
+                    return redirect('admin_categorias')
+    
+    return render(request, 'blog/admin/categoria_form.html', {
+        'acao': 'Criar'
+    })
+
+
+@login_required
+def admin_categoria_editar(request, categoria_id):
+    """
+    Editar categoria existente - SQL PURO
+    
+    SQL EXECUTADO:
+    1. SELECT categoria por ID
+    2. SELECT para verificar nome duplicado
+    3. UPDATE categoria
+    """
+    
+    if not usuario_e_admin(request.user):
+        messages.error(request, 'Acesso negado. Apenas administradores.')
+        return redirect('post_list')
+    
+    with connection.cursor() as cursor:
+        # SQL: Buscar categoria
+        cursor.execute("""
+            SELECT id, nome FROM blog_categoria WHERE id = %s
+        """, [categoria_id])
+        
+        categoria_data = cursor.fetchone()
+        
+        if not categoria_data:
+            messages.error(request, 'Categoria não encontrada.')
+            return redirect('admin_categorias')
+        
+        categoria = {
+            'id': categoria_data[0],
+            'nome': categoria_data[1]
+        }
+        
+        if request.method == 'POST':
+            nome = request.POST.get('nome', '').strip()
+            
+            if not nome:
+                messages.error(request, 'O nome da categoria não pode estar vazio.')
+            elif len(nome) < 3:
+                messages.error(request, 'O nome deve ter pelo menos 3 caracteres.')
+            else:
+                # SQL: Verificar se nome já existe (exceto esta categoria)
+                cursor.execute("""
+                    SELECT COUNT(*) FROM blog_categoria 
+                    WHERE nome = %s AND id != %s
+                """, [nome, categoria_id])
+                
+                if cursor.fetchone()[0] > 0:
+                    messages.error(request, 'Já existe outra categoria com este nome.')
+                else:
+                    # SQL: Atualizar categoria
+                    cursor.execute("""
+                        UPDATE blog_categoria
+                        SET nome = %s
+                        WHERE id = %s
+                    """, [nome, categoria_id])
+                    
+                    messages.success(request, f'Categoria atualizada para "{nome}"!')
+                    return redirect('admin_categorias')
+    
+    return render(request, 'blog/admin/categoria_form.html', {
+        'categoria': categoria,
+        'acao': 'Editar'
+    })
+
+
+@login_required
+def admin_categoria_excluir(request, categoria_id):
+    """
+    Excluir categoria - SQL PURO
+    
+    SQL EXECUTADO:
+    1. SELECT categoria com contagem de posts
+    2. DELETE categoria (se confirmado)
+    """
+    
+    if not usuario_e_admin(request.user):
+        messages.error(request, 'Acesso negado. Apenas administradores.')
+        return redirect('post_list')
+    
+    with connection.cursor() as cursor:
+        # SQL: Buscar categoria com contagem de posts
+        cursor.execute("""
+            SELECT 
+                c.id,
+                c.nome,
+                COUNT(p.id) AS total_posts
+            FROM blog_categoria c
+            LEFT JOIN blog_post p ON c.id = p.categoria_id
+            WHERE c.id = %s
+            GROUP BY c.id, c.nome
+        """, [categoria_id])
+        
+        categoria_data = cursor.fetchone()
+        
+        if not categoria_data:
+            messages.error(request, 'Categoria não encontrada.')
+            return redirect('admin_categorias')
+        
+        categoria = {
+            'id': categoria_data[0],
+            'nome': categoria_data[1],
+            'total_posts': categoria_data[2]
+        }
+        
+        if request.method == 'POST':
+            # SQL: Antes de excluir, setar posts para NULL
+            cursor.execute("""
+                UPDATE blog_post
+                SET categoria_id = NULL
+                WHERE categoria_id = %s
+            """, [categoria_id])
+            
+            # SQL: Excluir categoria
+            cursor.execute("""
+                DELETE FROM blog_categoria WHERE id = %s
+            """, [categoria_id])
+            
+            messages.success(request, f'Categoria "{categoria["nome"]}" excluída com sucesso!')
+            return redirect('admin_categorias')
+    
+    return render(request, 'blog/admin/categoria_confirmar_exclusao.html', {
+        'categoria': categoria
+    })
+
+
+@login_required
+def admin_posts(request):
+    """
+    Listar todos os posts (admin) - SQL PURO
+    
+    SQL EXECUTADO:
+    SELECT posts com autor e categoria
+    """
+    
+    if not usuario_e_admin(request.user):
+        messages.error(request, 'Acesso negado. Apenas administradores.')
+        return redirect('post_list')
+    
+    with connection.cursor() as cursor:
+        # SQL: Listar todos os posts
+        cursor.execute("""
+            SELECT 
+                p.id,
+                p.titulo,
+                p.slug,
+                p.criado_em,
+                u.username AS autor,
+                c.nome AS categoria,
+                COUNT(DISTINCT com.id) AS total_comentarios
+            FROM blog_post p
+            INNER JOIN auth_user u ON p.autor_id = u.id
+            LEFT JOIN blog_categoria c ON p.categoria_id = c.id
+            LEFT JOIN blog_comentario com ON p.id = com.post_id
+            GROUP BY p.id, u.username, c.nome
+            ORDER BY p.criado_em DESC
+        """)
+        
+        posts = cursor.fetchall()
+    
+    return render(request, 'blog/admin/posts_lista.html', {
+        'posts': posts
+    })
+
+
+@login_required
+def admin_usuarios(request):
+    """
+    Listar todos os usuários (admin) - SQL PURO
+    
+    SQL EXECUTADO:
+    SELECT usuários com perfil
+    """
+    
+    if not usuario_e_admin(request.user):
+        messages.error(request, 'Acesso negado. Apenas administradores.')
+        return redirect('post_list')
+    
+    with connection.cursor() as cursor:
+        # SQL: Listar usuários com perfil
+        cursor.execute("""
+            SELECT 
+                u.id,
+                u.username,
+                u.email,
+                u.date_joined,
+                p.tipo_usuario,
+                p.ativo,
+                COUNT(DISTINCT po.id) AS total_posts,
+                COUNT(DISTINCT c.id) AS total_comentarios
+            FROM auth_user u
+            LEFT JOIN blog_perfilusuario p ON u.id = p.usuario_id
+            LEFT JOIN blog_post po ON u.id = po.autor_id
+            LEFT JOIN blog_comentario c ON u.id = c.autor_id
+            GROUP BY u.id, u.username, u.email, u.date_joined, p.tipo_usuario, p.ativo
+            ORDER BY u.date_joined DESC
+        """)
+        
+        usuarios = cursor.fetchall()
+    
+    return render(request, 'blog/admin/usuarios_lista.html', {
+        'usuarios': usuarios
+    })

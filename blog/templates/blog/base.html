@@ -29,7 +29,12 @@
     <ul>
       <li><a href="{% url 'post_list' %}">🏠 Início</a></li>
       {% if user.is_authenticated %}
-        <li><a href="{% url 'post_create' %}">📝 Novo Post</a></li>
+        {% if user.perfil.is_admin %}
+          <li><a href="{% url 'painel_admin' %}">🔧 Admin</a></li>
+        {% endif %}
+      {% endif %}
+      {% if user.is_authenticated %}
+      <li><a href="{% url 'post_create' %}">📝 Novo Post</a></li>
         <li class="user-info">Olá, {{ user.username }}</li>
         <li>
           <form action="{% url 'logout' %}" method="post" style="display: inline;">
