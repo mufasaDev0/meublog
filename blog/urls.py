@@ -16,24 +16,24 @@ urlpatterns = [
     path('comentario/<int:comentario_id>/editar/', views.editar_comentario, name='editar_comentario'),
     path('comentario/<int:comentario_id>/excluir/', views.excluir_comentario, name='excluir_comentario'),
     
-    # Gestão de usuários (apenas admin)
-    path('usuario/<int:usuario_id>/desativar/', views.desativar_usuario, name='desativar_usuario'),
-    path('usuario/<int:usuario_id>/ativar/', views.ativar_usuario, name='ativar_usuario'),
-    
     # ============================================
     # PAINEL ADMINISTRATIVO
     # ============================================
     path('painel-admin/', views.painel_admin, name='painel_admin'),
     
     # Categorias (CRUD completo)
-    path('admin/categorias/', views.admin_categorias, name='admin_categorias'),
-    path('admin/categorias/criar/', views.admin_categoria_criar, name='admin_categoria_criar'),
-    path('admin/categorias/<int:categoria_id>/editar/', views.admin_categoria_editar, name='admin_categoria_editar'),
-    path('admin/categorias/<int:categoria_id>/excluir/', views.admin_categoria_excluir, name='admin_categoria_excluir'),
+    path('gerenciar/categorias/', views.admin_categorias, name='admin_categorias'),
+    path('gerenciar/categorias/criar/', views.admin_categoria_criar, name='admin_categoria_criar'),
+    path('gerenciar/categorias/<int:categoria_id>/editar/', views.admin_categoria_editar, name='admin_categoria_editar'),
+    path('gerenciar/categorias/<int:categoria_id>/excluir/', views.admin_categoria_excluir, name='admin_categoria_excluir'),
     
     # Posts (listagem para admin)
-    path('admin/posts/', views.admin_posts, name='admin_posts'),
+    path('gerenciar/posts/', views.admin_posts, name='admin_posts'),
     
     # Usuários (listagem para admin)
-    path('admin/usuarios/', views.admin_usuarios, name='admin_usuarios'),
+    path('gerenciar/usuarios/', views.admin_usuarios, name='admin_usuarios'),
+    
+    # Gestão de usuários
+    path('usuario/<int:usuario_id>/desativar/', views.desativar_usuario, name='desativar_usuario'),
+    path('usuario/<int:usuario_id>/ativar/', views.ativar_usuario, name='ativar_usuario'),
 ]

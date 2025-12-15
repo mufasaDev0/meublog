@@ -4,115 +4,115 @@
 {% block title %}Painel Administrativo – MeuBlog{% endblock %}
 
 {% block content %}
-<div style="max-width: 1200px; margin: 0 auto; padding: 2em;">
+<div style="max-width: 1400px; margin: 0 auto; padding: 1.5em;">
   
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2em;">
-    <h1 style="color: #003f88; margin: 0;">🔧 Painel Administrativo</h1>
-    <a href="{% url 'post_list' %}" style="padding: 0.6em 1.2em; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2em; flex-wrap: wrap; gap: 1em;">
+    <h1 style="color: #003f88; margin: 0; font-size: 2em;">🔧 Painel Administrativo</h1>
+    <a href="{% url 'post_list' %}" style="padding: 0.6em 1.2em; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; white-space: nowrap;">
       ← Voltar ao Blog
     </a>
   </div>
 
-  <!-- ESTATÍSTICAS -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5em; margin-bottom: 3em;">
+  <!-- ESTATÍSTICAS - 4 CARDS EM LINHA -->
+  <div class="stats-grid">
     
     <!-- Card: Posts -->
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2em; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-      <div style="font-size: 3em; margin-bottom: 0.3em;">📝</div>
-      <div style="font-size: 2.5em; font-weight: bold;">{{ total_posts }}</div>
-      <div style="font-size: 1.1em; opacity: 0.9;">Posts Publicados</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+      <div class="stat-icon">📝</div>
+      <div class="stat-number">{{ total_posts }}</div>
+      <div class="stat-label">Posts</div>
     </div>
 
     <!-- Card: Usuários -->
-    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 2em; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-      <div style="font-size: 3em; margin-bottom: 0.3em;">👥</div>
-      <div style="font-size: 2.5em; font-weight: bold;">{{ total_usuarios }}</div>
-      <div style="font-size: 1.1em; opacity: 0.9;">Usuários Cadastrados</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+      <div class="stat-icon">👥</div>
+      <div class="stat-number">{{ total_usuarios }}</div>
+      <div class="stat-label">Usuários</div>
     </div>
 
     <!-- Card: Comentários -->
-    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 2em; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-      <div style="font-size: 3em; margin-bottom: 0.3em;">💬</div>
-      <div style="font-size: 2.5em; font-weight: bold;">{{ total_comentarios }}</div>
-      <div style="font-size: 1.1em; opacity: 0.9;">Comentários</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+      <div class="stat-icon">💬</div>
+      <div class="stat-number">{{ total_comentarios }}</div>
+      <div class="stat-label">Comentários</div>
     </div>
 
     <!-- Card: Categorias -->
-    <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 2em; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-      <div style="font-size: 3em; margin-bottom: 0.3em;">🏷️</div>
-      <div style="font-size: 2.5em; font-weight: bold;">{{ total_categorias }}</div>
-      <div style="font-size: 1.1em; opacity: 0.9;">Categorias</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+      <div class="stat-icon">🏷️</div>
+      <div class="stat-number">{{ total_categorias }}</div>
+      <div class="stat-label">Categorias</div>
     </div>
 
   </div>
 
   <!-- MENU DE GESTÃO -->
-  <div style="background: white; padding: 2em; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); margin-bottom: 3em;">
-    <h2 style="color: #003f88; margin-bottom: 1.5em;">⚙️ Gerenciar</h2>
+  <div style="background: white; padding: 2em; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); margin-top: 3em;">
+    <h2 style="color: #003f88; margin-bottom: 1.5em; font-size: 1.5em;">⚙️ Gerenciar</h2>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em;">
+    <div class="manage-grid">
       
-      <a href="{% url 'admin_categorias' %}" style="padding: 1.5em; background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; text-decoration: none; color: #003f88; text-align: center; transition: all 0.3s;">
-        <div style="font-size: 2.5em; margin-bottom: 0.3em;">🏷️</div>
-        <div style="font-weight: bold;">Categorias</div>
-        <div style="font-size: 0.9em; color: #666; margin-top: 0.3em;">CRUD Completo</div>
+      <a href="{% url 'admin_categorias' %}" class="manage-card">
+        <div class="manage-icon">🏷️</div>
+        <div class="manage-title">Categorias</div>
+        <div class="manage-subtitle">CRUD Completo</div>
       </a>
 
-      <a href="{% url 'admin_posts' %}" style="padding: 1.5em; background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; text-decoration: none; color: #003f88; text-align: center; transition: all 0.3s;">
-        <div style="font-size: 2.5em; margin-bottom: 0.3em;">📝</div>
-        <div style="font-weight: bold;">Posts</div>
-        <div style="font-size: 0.9em; color: #666; margin-top: 0.3em;">Gerenciar & Excluir</div>
+      <a href="{% url 'admin_posts' %}" class="manage-card">
+        <div class="manage-icon">📝</div>
+        <div class="manage-title">Posts</div>
+        <div class="manage-subtitle">Gerenciar & Excluir</div>
       </a>
 
-      <a href="{% url 'admin_usuarios' %}" style="padding: 1.5em; background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; text-decoration: none; color: #003f88; text-align: center; transition: all 0.3s;">
-        <div style="font-size: 2.5em; margin-bottom: 0.3em;">👥</div>
-        <div style="font-weight: bold;">Usuários</div>
-        <div style="font-size: 0.9em; color: #666; margin-top: 0.3em;">Ativar/Desativar</div>
+      <a href="{% url 'admin_usuarios' %}" class="manage-card">
+        <div class="manage-icon">👥</div>
+        <div class="manage-title">Usuários</div>
+        <div class="manage-subtitle">Ativar/Desativar</div>
       </a>
 
     </div>
   </div>
 
   <!-- ATIVIDADE RECENTE -->
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2em;">
+  <div class="activity-grid">
     
     <!-- Últimos Posts -->
-    <div style="background: white; padding: 2em; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);">
-      <h3 style="color: #003f88; margin-bottom: 1em;">📝 Últimos Posts</h3>
-      <div style="max-height: 300px; overflow-y: auto;">
+    <div class="activity-card">
+      <h3>📝 Últimos Posts</h3>
+      <div class="activity-list">
         {% for post in ultimos_posts %}
-        <div style="padding: 0.8em; border-bottom: 1px solid #eee;">
-          <a href="{% url 'post_detail' slug=post.2 %}" style="color: #003f88; font-weight: bold; text-decoration: none;">
-            {{ post.1 }}
+        <div class="activity-item">
+          <a href="{% url 'post_detail' slug=post.2 %}">
+            {{ post.1|truncatewords:10 }}
           </a>
-          <div style="font-size: 0.85em; color: #666; margin-top: 0.3em;">
+          <div class="activity-meta">
             Por {{ post.4 }} • {{ post.3|date:"d/m/Y" }}
           </div>
         </div>
         {% empty %}
-        <p style="text-align: center; color: #999; padding: 2em;">Nenhum post ainda</p>
+        <p class="activity-empty">Nenhum post ainda</p>
         {% endfor %}
       </div>
     </div>
 
     <!-- Últimos Usuários -->
-    <div style="background: white; padding: 2em; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);">
-      <h3 style="color: #003f88; margin-bottom: 1em;">👥 Últimos Usuários</h3>
-      <div style="max-height: 300px; overflow-y: auto;">
+    <div class="activity-card">
+      <h3>👥 Últimos Usuários</h3>
+      <div class="activity-list">
         {% for usuario in ultimos_usuarios %}
-        <div style="padding: 0.8em; border-bottom: 1px solid #eee;">
-          <div style="font-weight: bold; color: #003f88;">{{ usuario.1 }}</div>
-          <div style="font-size: 0.85em; color: #666; margin-top: 0.3em;">
+        <div class="activity-item">
+          <div class="activity-user">{{ usuario.1 }}</div>
+          <div class="activity-meta">
             {{ usuario.2 }} • {{ usuario.3|date:"d/m/Y" }}
             {% if usuario.4 %}
-              <span style="color: #28a745;">✓ Ativo</span>
+              <span class="status-badge active">✓ Ativo</span>
             {% else %}
-              <span style="color: #dc3545;">✗ Inativo</span>
+              <span class="status-badge inactive">✗ Inativo</span>
             {% endif %}
           </div>
         </div>
         {% empty %}
-        <p style="text-align: center; color: #999; padding: 2em;">Nenhum usuário ainda</p>
+        <p class="activity-empty">Nenhum usuário ainda</p>
         {% endfor %}
       </div>
     </div>
@@ -124,11 +124,215 @@
 
 {% block extra_css %}
 <style>
-  a[style*="background-color: #f8f9fa"]:hover {
-    background-color: #e9ecef !important;
-    border-color: #003f88 !important;
+  /* ========== GRID DE ESTATÍSTICAS - 4 COLUNAS ========== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1em;
+    margin-bottom: 2em;
+  }
+
+  .stat-card {
+    color: white;
+    padding: 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+
+  .stat-icon {
+    font-size: 2.5em;
+    margin-bottom: 0.3em;
+  }
+
+  .stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 0.2em;
+  }
+
+  .stat-label {
+    font-size: 1em;
+    opacity: 0.9;
+  }
+
+  /* ========== GRID DE GERENCIAMENTO ========== */
+  .manage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1em;
+  }
+
+  .manage-card {
+    padding: 1.5em;
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #003f88;
+    text-align: center;
+    transition: all 0.3s;
+    display: block;
+  }
+
+  .manage-card:hover {
+    background-color: #e9ecef;
+    border-color: #003f88;
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  .manage-icon {
+    font-size: 2.5em;
+    margin-bottom: 0.5em;
+  }
+
+  .manage-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 0.3em;
+  }
+
+  .manage-subtitle {
+    font-size: 0.85em;
+    color: #666;
+  }
+
+  /* ========== ATIVIDADE RECENTE ========== */
+  .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2em;
+    margin-top: 3em;
+  }
+
+  .activity-card {
+    background: white;
+    padding: 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+
+  .activity-card h3 {
+    color: #003f88;
+    margin-bottom: 1em;
+    font-size: 1.2em;
+  }
+
+  .activity-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .activity-item {
+    padding: 0.8em;
+    border-bottom: 1px solid #eee;
+  }
+
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+
+  .activity-item a {
+    color: #003f88;
+    font-weight: bold;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.3em;
+  }
+
+  .activity-item a:hover {
+    color: #d62828;
+  }
+
+  .activity-user {
+    font-weight: bold;
+    color: #003f88;
+    margin-bottom: 0.3em;
+  }
+
+  .activity-meta {
+    font-size: 0.85em;
+    color: #666;
+  }
+
+  .activity-empty {
+    text-align: center;
+    color: #999;
+    padding: 2em;
+    font-style: italic;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.2em 0.5em;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 0.5em;
+  }
+
+  .status-badge.active {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .status-badge.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  /* ========== RESPONSIVIDADE ========== */
+  
+  /* Tablets */
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat-icon {
+      font-size: 2em;
+    }
+
+    .stat-number {
+      font-size: 2em;
+    }
+
+    .manage-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .activity-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    h1 {
+      font-size: 1.5em !important;
+    }
+
+    .stat-card {
+      padding: 1em;
+    }
+  }
+
+  /* Desktop grande - forçar 4 colunas se tiver espaço */
+  @media (min-width: 1200px) {
+    .stats-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 </style>
 {% endblock %}

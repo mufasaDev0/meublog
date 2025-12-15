@@ -4,93 +4,90 @@
 {% block title %}Gerenciar Usuários – Admin{% endblock %}
 
 {% block content %}
-<div style="max-width: 1200px; margin: 0 auto; padding: 2em;">
+<div style="max-width: 1400px; margin: 0 auto; padding: 1.5em;">
   
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2em;">
-    <h1 style="color: #003f88; margin: 0;">👥 Gerenciar Usuários</h1>
-    <a href="{% url 'painel_admin' %}" style="padding: 0.7em 1.5em; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px;">
+  <!-- CABEÇALHO -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2em; flex-wrap: wrap; gap: 1em;">
+    <h1 style="color: #003f88; margin: 0; font-size: 1.8em;">👥 Gerenciar Usuários</h1>
+    <a href="{% url 'painel_admin' %}" class="btn btn-secondary">
       ← Voltar ao Painel
     </a>
   </div>
 
-  <!-- TABELA DE USUÁRIOS -->
-  <div style="background: white; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow: hidden;">
-    <table style="width: 100%; border-collapse: collapse;">
+  <!-- INFORMAÇÃO -->
+  <div class="info-box">
+    <strong>ℹ️ Informação:</strong> Total de {{ usuarios|length }} usuário{{ usuarios|length|pluralize }} cadastrado{{ usuarios|length|pluralize }}.
+    Você pode ativar ou desativar usuários para controlar o acesso ao sistema.
+  </div>
+
+  <!-- TABELA DE USUÁRIOS (COM SCROLL HORIZONTAL) -->
+  <div class="table-wrapper">
+    <table class="users-table">
       <thead>
-        <tr style="background-color: #003f88; color: white;">
-          <th style="padding: 1em; text-align: left; font-weight: bold;">ID</th>
-          <th style="padding: 1em; text-align: left; font-weight: bold;">Username</th>
-          <th style="padding: 1em; text-align: left; font-weight: bold;">Email</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Tipo</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Posts</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Comentários</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Cadastro</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Status</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Ações</th>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Tipo</th>
+          <th style="text-align: center;">Posts</th>
+          <th style="text-align: center;">Comentários</th>
+          <th>Cadastro</th>
+          <th style="text-align: center; min-width: 150px;">Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for usuario in usuarios %}
-        <tr style="border-bottom: 1px solid #dee2e6; {% cycle '' 'background-color: #f8f9fa;' %}">
-          <td style="padding: 1em; color: #666;">#{{ usuario.0 }}</td>
-          <td style="padding: 1em; font-weight: bold; color: #003f88;">{{ usuario.1 }}</td>
-          <td style="padding: 1em; color: #666; font-size: 0.9em;">{{ usuario.2 }}</td>
-          <td style="padding: 1em; text-align: center;">
+        <tr>
+          <td><span class="id-badge">#{{ usuario.0 }}</span></td>
+          <td class="username">{{ usuario.1 }}</td>
+          <td class="email">{{ usuario.2 }}</td>
+          <td>
             {% if usuario.4 == 'admin' %}
-              <span style="display: inline-block; padding: 0.3em 0.8em; background-color: #dc3545; color: white; border-radius: 15px; font-size: 0.85em; font-weight: bold;">
-                👑 Admin
-              </span>
+              <span class="badge badge-admin">👑 Admin</span>
             {% else %}
-              <span style="display: inline-block; padding: 0.3em 0.8em; background-color: #6c757d; color: white; border-radius: 15px; font-size: 0.85em;">
-                Comum
-              </span>
+              <span class="badge badge-user">👤 Comum</span>
             {% endif %}
           </td>
-          <td style="padding: 1em; text-align: center;">
-            <span style="display: inline-block; padding: 0.3em 0.8em; background-color: #e7f3ff; color: #0066cc; border-radius: 15px;">
-              {{ usuario.6 }}
-            </span>
+          <td style="text-align: center;">
+            <span class="count-badge posts">{{ usuario.6 }}</span>
           </td>
-          <td style="padding: 1em; text-align: center;">
-            <span style="display: inline-block; padding: 0.3em 0.8em; background-color: #f0f0f0; color: #666; border-radius: 15px;">
-              {{ usuario.7 }}
-            </span>
+          <td style="text-align: center;">
+            <span class="count-badge comments">{{ usuario.7 }}</span>
           </td>
-          <td style="padding: 1em; text-align: center; color: #666; font-size: 0.9em;">
-            {{ usuario.3|date:"d/m/Y" }}
-          </td>
-          <td style="padding: 1em; text-align: center;">
-            {% if usuario.5 %}
-              <span style="display: inline-block; padding: 0.3em 0.8em; background-color: #d4edda; color: #155724; border-radius: 15px; font-weight: bold;">
-                ✓ Ativo
-              </span>
-            {% else %}
-              <span style="display: inline-block; padding: 0.3em 0.8em; background-color: #f8d7da; color: #721c24; border-radius: 15px; font-weight: bold;">
-                ✗ Inativo
-              </span>
-            {% endif %}
-          </td>
-          <td style="padding: 1em; text-align: center;">
-            {% if usuario.4 != 'admin' %}
+          <td class="date">{{ usuario.3|date:"d/m/Y" }}</td>
+          <td>
+            <div class="action-cell">
               {% if usuario.5 %}
-                <a href="{% url 'desativar_usuario' usuario.0 %}" style="display: inline-block; padding: 0.5em 1em; background-color: #ffc107; color: #000; text-decoration: none; border-radius: 4px; font-size: 0.85em; font-weight: bold;" onclick="return confirm('Tem certeza que deseja desativar este usuário?')">
-                  🚫 Desativar
-                </a>
+                <!-- Usuário Ativo -->
+                <span class="status-badge active">✓ Ativo</span>
+                {% if usuario.4 != 'admin' %}
+                  <a href="{% url 'desativar_usuario' usuario.0 %}" 
+                     class="btn-action btn-deactivate"
+                     onclick="return confirm('Desativar usuário {{ usuario.1 }}?')">
+                    🚫 Desativar
+                  </a>
+                {% else %}
+                  <span class="text-muted">Admin protegido</span>
+                {% endif %}
               {% else %}
-                <a href="{% url 'ativar_usuario' usuario.0 %}" style="display: inline-block; padding: 0.5em 1em; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 0.85em; font-weight: bold;">
+                <!-- Usuário Inativo -->
+                <span class="status-badge inactive">✗ Inativo</span>
+                <a href="{% url 'ativar_usuario' usuario.0 %}" 
+                   class="btn-action btn-activate"
+                   onclick="return confirm('Ativar usuário {{ usuario.1 }}?')">
                   ✓ Ativar
                 </a>
               {% endif %}
-            {% else %}
-              <span style="color: #999; font-size: 0.85em;">Protegido</span>
-            {% endif %}
+            </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="9" style="padding: 3em; text-align: center; color: #999;">
-            <div style="font-size: 3em; margin-bottom: 0.5em;">📭</div>
-            <div style="font-size: 1.2em;">Nenhum usuário cadastrado</div>
+          <td colspan="8" style="text-align: center; padding: 3em;">
+            <div class="empty-state">
+              <div class="empty-icon">👥</div>
+              <div class="empty-text">Nenhum usuário cadastrado</div>
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -98,16 +95,314 @@
     </table>
   </div>
 
-  <!-- INFO -->
-  <div style="margin-top: 2em; padding: 1.5em; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px;">
-    <strong>⚠️ Importante:</strong> 
-    <ul style="margin: 0.5em 0 0 1.5em; color: #856404;">
-      <li>Usuários <strong>desativados</strong> não podem fazer login no sistema</li>
-      <li>Contas de <strong>administradores</strong> não podem ser desativadas</li>
-      <li>Posts e comentários de usuários desativados permanecem no sistema</li>
-      <li>Para reativar um usuário, basta clicar no botão "Ativar"</li>
-    </ul>
+  <!-- LEGENDA -->
+  <div class="legend-box">
+    <h4>📋 Legenda:</h4>
+    <div class="legend-items">
+      <div class="legend-item">
+        <span class="badge badge-admin">👑 Admin</span>
+        <span>Acesso total ao sistema, não pode ser desativado</span>
+      </div>
+      <div class="legend-item">
+        <span class="badge badge-user">👤 Comum</span>
+        <span>Usuário padrão, pode criar posts e comentários</span>
+      </div>
+      <div class="legend-item">
+        <span class="status-badge active">✓ Ativo</span>
+        <span>Pode fazer login e usar o sistema</span>
+      </div>
+      <div class="legend-item">
+        <span class="status-badge inactive">✗ Inativo</span>
+        <span>Bloqueado, não pode fazer login</span>
+      </div>
+    </div>
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ========== BOTÕES ========== */
+  .btn {
+    padding: 0.7em 1.5em;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    display: inline-block;
+    transition: all 0.3s;
+    white-space: nowrap;
+    font-size: 0.95em;
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+  }
+
+  /* ========== INFO BOX ========== */
+  .info-box {
+    padding: 1.2em;
+    background-color: #e7f3ff;
+    border-left: 4px solid #0066cc;
+    border-radius: 5px;
+    color: #004085;
+    margin-bottom: 2em;
+  }
+
+  /* ========== TABELA COM SCROLL ========== */
+  .table-wrapper {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    overflow-x: auto;
+    margin-bottom: 2em;
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px; /* Força scroll horizontal em telas pequenas */
+  }
+
+  .users-table thead tr {
+    background-color: #003f88;
+    color: white;
+  }
+
+  .users-table th {
+    padding: 1em 0.8em;
+    text-align: left;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .users-table td {
+    padding: 0.9em 0.8em;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+  }
+
+  .users-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+
+  .users-table tbody tr:hover {
+    background-color: #e9ecef;
+  }
+
+  /* ========== CÉLULAS ========== */
+  .id-badge {
+    color: #666;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+
+  .username {
+    font-weight: bold;
+    color: #003f88;
+  }
+
+  .email {
+    color: #666;
+    font-size: 0.9em;
+  }
+
+  .date {
+    color: #666;
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+
+  /* ========== BADGES ========== */
+  .badge {
+    display: inline-block;
+    padding: 0.4em 0.8em;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.85em;
+    white-space: nowrap;
+  }
+
+  .badge-admin {
+    background-color: #ffd700;
+    color: #000;
+  }
+
+  .badge-user {
+    background-color: #e9ecef;
+    color: #495057;
+  }
+
+  .count-badge {
+    display: inline-block;
+    padding: 0.3em 0.7em;
+    background-color: #e7f3ff;
+    color: #0066cc;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.85em;
+  }
+
+  .count-badge.posts {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .count-badge.comments {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.4em 0.8em;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.85em;
+    margin-right: 0.5em;
+    white-space: nowrap;
+  }
+
+  .status-badge.active {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .status-badge.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  /* ========== BOTÕES DE AÇÃO ========== */
+  .action-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-action {
+    padding: 0.4em 0.8em;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+
+  .btn-deactivate {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .btn-deactivate:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+  }
+
+  .btn-activate {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .btn-activate:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+  }
+
+  .text-muted {
+    color: #999;
+    font-size: 0.85em;
+    font-style: italic;
+  }
+
+  /* ========== ESTADO VAZIO ========== */
+  .empty-state {
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 3em;
+    margin-bottom: 0.5em;
+  }
+
+  .empty-text {
+    font-size: 1.2em;
+    color: #666;
+  }
+
+  /* ========== LEGENDA ========== */
+  .legend-box {
+    background: white;
+    padding: 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+
+  .legend-box h4 {
+    color: #003f88;
+    margin-bottom: 1em;
+    font-size: 1.1em;
+  }
+
+  .legend-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1em;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    padding: 0.8em;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+  }
+
+  .legend-item span:last-child {
+    color: #666;
+    font-size: 0.9em;
+  }
+
+  /* ========== RESPONSIVIDADE ========== */
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 1.5em !important;
+    }
+
+    .table-wrapper {
+      border-radius: 5px;
+    }
+
+    .users-table th,
+    .users-table td {
+      padding: 0.7em 0.5em;
+      font-size: 0.9em;
+    }
+
+    .legend-items {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.3em !important;
+    }
+
+    .btn {
+      padding: 0.6em 1em;
+      font-size: 0.9em;
+    }
+  }
+</style>
 {% endblock %}

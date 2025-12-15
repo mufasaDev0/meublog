@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-substitua-por-uma-chave-secreta-real'
 
 # ⚠️ Nunca use DEBUG=True em produção!
-DEBUG = False
+DEBUG = True
 
 # Hosts permitidos
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']

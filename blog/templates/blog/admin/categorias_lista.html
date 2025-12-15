@@ -4,58 +4,63 @@
 {% block title %}Gerenciar Categorias – Admin{% endblock %}
 
 {% block content %}
-<div style="max-width: 1000px; margin: 0 auto; padding: 2em;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 1.5em;">
   
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2em;">
-    <h1 style="color: #003f88; margin: 0;">🏷️ Gerenciar Categorias</h1>
-    <div>
-      <a href="{% url 'admin_categoria_criar' %}" style="padding: 0.7em 1.5em; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-right: 0.5em; font-weight: bold;">
+  <!-- CABEÇALHO -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2em; flex-wrap: wrap; gap: 1em;">
+    <h1 style="color: #003f88; margin: 0; font-size: 1.8em;">🏷️ Gerenciar Categorias</h1>
+    <div style="display: flex; gap: 0.8em; flex-wrap: wrap;">
+      <a href="{% url 'admin_categoria_criar' %}" class="btn btn-success">
         ➕ Nova Categoria
       </a>
-      <a href="{% url 'painel_admin' %}" style="padding: 0.7em 1.5em; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px;">
+      <a href="{% url 'painel_admin' %}" class="btn btn-secondary">
         ← Voltar ao Painel
       </a>
     </div>
   </div>
 
   <!-- TABELA DE CATEGORIAS -->
-  <div style="background: white; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow: hidden;">
-    <table style="width: 100%; border-collapse: collapse;">
+  <div class="table-container">
+    <table class="data-table">
       <thead>
-        <tr style="background-color: #003f88; color: white;">
-          <th style="padding: 1em; text-align: left; font-weight: bold;">ID</th>
-          <th style="padding: 1em; text-align: left; font-weight: bold;">Nome da Categoria</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Total de Posts</th>
-          <th style="padding: 1em; text-align: center; font-weight: bold;">Ações</th>
+        <tr>
+          <th>ID</th>
+          <th>Nome da Categoria</th>
+          <th style="text-align: center;">Total de Posts</th>
+          <th style="text-align: center; min-width: 200px;">Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for categoria in categorias %}
-        <tr style="border-bottom: 1px solid #dee2e6; {% cycle '' 'background-color: #f8f9fa;' %}">
-          <td style="padding: 1em; color: #666;">#{{ categoria.0 }}</td>
-          <td style="padding: 1em; font-weight: bold; color: #003f88;">{{ categoria.1 }}</td>
-          <td style="padding: 1em; text-align: center;">
-            <span style="display: inline-block; padding: 0.3em 0.8em; background-color: #e7f3ff; color: #0066cc; border-radius: 15px; font-weight: bold;">
+        <tr>
+          <td><span class="id-badge">#{{ categoria.0 }}</span></td>
+          <td class="categoria-nome">{{ categoria.1 }}</td>
+          <td style="text-align: center;">
+            <span class="count-badge">
               {{ categoria.2 }} post{{ categoria.2|pluralize }}
             </span>
           </td>
-          <td style="padding: 1em; text-align: center;">
-            <a href="{% url 'admin_categoria_editar' categoria.0 %}" style="display: inline-block; padding: 0.5em 1em; background-color: #ffc107; color: #000; text-decoration: none; border-radius: 4px; margin-right: 0.5em; font-size: 0.9em;">
-              ✏️ Editar
-            </a>
-            <a href="{% url 'admin_categoria_excluir' categoria.0 %}" style="display: inline-block; padding: 0.5em 1em; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px; font-size: 0.9em;" onclick="return confirm('Tem certeza que deseja excluir esta categoria?')">
-              🗑️ Excluir
-            </a>
+          <td>
+            <div class="action-buttons">
+              <a href="{% url 'admin_categoria_editar' categoria.0 %}" class="btn-action btn-edit">
+                ✏️ Editar
+              </a>
+              <a href="{% url 'admin_categoria_excluir' categoria.0 %}" class="btn-action btn-delete" onclick="return confirm('Tem certeza que deseja excluir esta categoria?')">
+                🗑️ Excluir
+              </a>
+            </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="4" style="padding: 3em; text-align: center; color: #999;">
-            <div style="font-size: 3em; margin-bottom: 0.5em;">📭</div>
-            <div style="font-size: 1.2em; margin-bottom: 1em;">Nenhuma categoria cadastrada</div>
-            <a href="{% url 'admin_categoria_criar' %}" style="display: inline-block; padding: 0.8em 2em; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-              ➕ Criar Primeira Categoria
-            </a>
+          <td colspan="4" style="text-align: center; padding: 3em;">
+            <div class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div class="empty-text">Nenhuma categoria cadastrada</div>
+              <a href="{% url 'admin_categoria_criar' %}" class="btn btn-success" style="margin-top: 1em;">
+                ➕ Criar Primeira Categoria
+              </a>
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -64,9 +69,203 @@
   </div>
 
   <!-- INFO -->
-  <div style="margin-top: 2em; padding: 1.5em; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px;">
+  <div class="info-box">
     <strong>💡 Dica:</strong> Categorias ajudam a organizar os posts do blog. Ao excluir uma categoria, os posts associados não serão excluídos, apenas ficarão sem categoria.
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ========== BOTÕES ========== */
+  .btn {
+    padding: 0.7em 1.5em;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    display: inline-block;
+    transition: all 0.3s;
+    white-space: nowrap;
+    font-size: 0.95em;
+  }
+
+  .btn-success {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+
+  /* ========== TABELA ========== */
+  .table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    overflow-x: auto;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+
+  .data-table thead tr {
+    background-color: #003f88;
+    color: white;
+  }
+
+  .data-table th {
+    padding: 1em;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  .data-table td {
+    padding: 1em;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .data-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+
+  .data-table tbody tr:hover {
+    background-color: #e9ecef;
+  }
+
+  .id-badge {
+    color: #666;
+    font-family: monospace;
+  }
+
+  .categoria-nome {
+    font-weight: bold;
+    color: #003f88;
+  }
+
+  .count-badge {
+    display: inline-block;
+    padding: 0.4em 0.8em;
+    background-color: #e7f3ff;
+    color: #0066cc;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+
+  /* ========== BOTÕES DE AÇÃO ========== */
+  .action-buttons {
+    display: flex;
+    gap: 0.5em;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-action {
+    padding: 0.5em 1em;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+
+  .btn-edit {
+    background-color: #ffc107;
+    color: #000;
+  }
+
+  .btn-edit:hover {
+    background-color: #e0a800;
+    transform: scale(1.05);
+  }
+
+  .btn-delete {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .btn-delete:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+  }
+
+  /* ========== ESTADO VAZIO ========== */
+  .empty-state {
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 3em;
+    margin-bottom: 0.5em;
+  }
+
+  .empty-text {
+    font-size: 1.2em;
+    color: #666;
+    margin-bottom: 1em;
+  }
+
+  /* ========== INFO BOX ========== */
+  .info-box {
+    margin-top: 2em;
+    padding: 1.5em;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 5px;
+    color: #856404;
+  }
+
+  /* ========== RESPONSIVIDADE ========== */
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 1.5em !important;
+    }
+
+    .btn {
+      padding: 0.6em 1em;
+      font-size: 0.9em;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 0.7em 0.5em;
+      font-size: 0.9em;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+
+    .btn-action {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .table-container {
+      overflow-x: scroll;
+    }
+
+    h1 {
+      font-size: 1.3em !important;
+    }
+  }
+</style>
 {% endblock %}
